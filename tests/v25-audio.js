@@ -1,7 +1,7 @@
 const fs=require('fs'),path=require('path'),assert=require('node:assert/strict'),vm=require('node:vm');
 const root=path.join(__dirname,'..');const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 for(const id of ['sound','music-volume','effects-volume','ambience-volume','soundscape-indicator'])assert(html.includes(`id="${id}"`),id);
-assert(html.includes('audio.js?v=25'));const game=fs.readFileSync(path.join(root,'game.js'),'utf8');assert(game.includes('updateThreat(threat)'));
+assert.match(html,/<script src="audio\.js\?v=\d+" defer><\/script>/);const game=fs.readFileSync(path.join(root,'game.js'),'utf8');assert(game.includes('updateThreat(threat)'));
 let played=0,paused=0;const media=[];
 function Audio(src){this.src=src;this.volume=0;this.loop=false;this.currentTime=0;this.preload='none';this.play=()=>{played++;return Promise.resolve();};this.pause=()=>{paused++;};this.addEventListener=()=>{};this.removeAttribute=()=>{};media.push(this);}
 const memory={};let clock=1000;const callbacks=[];

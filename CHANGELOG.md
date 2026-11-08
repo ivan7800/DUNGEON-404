@@ -4,6 +4,8 @@
 - La identidad de la Catedral, las ilustraciones y la escena de mazmorra conservan sus colores y arte actuales; el tratamiento retro se limita a controles, paneles, diario y códice.
 - El efecto es estático y ligero, sin filtros sobre Canvas/WebGL, fuentes remotas ni cambios de jugabilidad.
 - Se mantienen focos visibles, tamaños táctiles y reglas de movimiento reducido.
+- Se alinean los parámetros de caché de todos los scripts del juego y del laboratorio con v6.5; el título del laboratorio vuelve a coincidir con su versión 3.9.
+- Auditoría de controles: la guía modal bloquea correctamente la partida mientras está abierta; los poderes dependen del personaje seleccionado y varias acciones requieren posición, objetivo o recurso válidos. La interfaz informa estos requisitos en el diario. No se encontró registro de Service Worker.
 
 # v6.4 — Reliquias de eco y la memoria de la Catedral
 
