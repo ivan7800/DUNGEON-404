@@ -1,124 +1,58 @@
-# v5.3 RC4 — Informe de entrega
+# v6.0 — La Catedral de la Marea · Informe de revisión
 
-Fecha: 8 de noviembre de 2026.
+Fecha: 8 de noviembre de 2026. Rama: `codex/cathedral-of-the-drowned-star`.
 
-## Ambientación gráfica RC4
+Estado: cambios preparados para revisión. No fusionados en `main` ni publicados en GitHub Pages. Este informe sustituye el informe acumulativo de los candidatos v5.x, que sigue disponible en el historial Git.
 
-- Las antorchas ahora se colocan contra paredes; el foco queda dentro del pasillo y no en el centro de las casillas.
-- Se redujo el aspecto de bloques suspendidos del techo y se sustituyó por nervaduras apuntadas más finas.
-- El shader de piedra usa vetas, grietas y manchas de humedad más orgánicas; se ajustó la luz ambiental para una escena más sombría.
-- La escena de apertura muestra una figura falsa al fondo del corredor durante los primeros turnos. Las apariciones también se activan con cordura baja y no tienen colisión ni lógica de enemigo.
-- Se añadieron marcas de sangre, glifos y huesos como detalles ambientales propios de cada profundidad.
-- `node --check renderer3d.js` y todos los scripts JavaScript de `tests/` pasan, incluida `v53-atmosphere.js`.
+## Línea base
 
-No se pudo abrir el servidor local en el Chrome compartido. Por tanto, la composición, legibilidad, calidad de shaders y rendimiento de esta build aún no se han inspeccionado en un navegador gráfico.
+Commit de partida: `affc35e2cdc8e174b068a09d66763f247a8f3f80` (v5.4 Final Candidate; la página todavía mostraba RC8). Los 42 scripts JavaScript existentes pasaron antes de editar. Se encontraron cuatro profundidades, tres finales, esquema de guardado 16, seis modelos GLB, modo WebGL y modo Canvas, sonido local y controles completos.
 
-## Recorrido actualizado
+El problema principal era la acumulación de controles y estilos de distintas versiones. La especialización del guerrero y la pícara era menor que la de los conjuradores y los jefes no tenían un aviso consistente de sus golpes fuertes.
 
-- Se modificaron los mapas de la Biblioteca Sumergida y el Laberinto Olvidado para separarlos del trazado repetido de las primeras profundidades.
-- Se rediseñó el Osario; la runa final queda a 13 pasos y el acceso al combate final a 22 pasos desde la entrada, usando camino mínimo.
-- Se añadieron ocho sucesos narrativos de una sola aparición, dos por profundidad, persistentes mediante el campo de historia ya existente.
-- La prueba de campaña registra victoria en 227 acciones frente a las 274 que registra la build anterior con el mismo guion.
-- Se ejecutaron todos los scripts JavaScript de `tests/` y pasaron, incluida `v52-adventure-route.js`.
+## Cambios entregados
 
-La reducción de acciones procede del rediseño de rutas y no demuestra por sí sola que el ritmo sea divertido. Sigue haciendo falta una partida humana y revisión visual de WebGL.
+- Nuevo sistema visual de piedra, hueso, latón y marea. Sello, cuatro retratos y once ilustraciones de criaturas SVG originales, editables y sin recursos remotos.
+- Interfaz completa reorganizada: grupo, mapa y cordura; cuatro acciones principales; artes desplegables; códice con Juramento, Inventario, Códice y Ajustes y partida.
+- Nuevos vanos de arco apuntado, tracería, columnas y detalles de libros, astrolabios y huesos para WebGL. Atlas de vanos y nuevas criaturas para Canvas, conservando recuperación al dibujo anterior si una imagen no carga.
+- Especialidades con recuperación por turnos: intercepción de Aldric, interrupción de Mara y acceso rápido a Escarcha/Santuario. Se conservan los conjuros anteriores.
+- Golpes fuertes de jefe con preparación y fase II: cambios de armadura, drenaje y alcance. Barra de amenaza con línea de visión y fase.
+- Decisión del altar con costes y efectos explícitos. Teclado accesible en pestañas, foco de selección de personajes, etiquetas de movimiento y medidor de cordura con valor accesible.
+- Guardados compatibles con esquema 16 y clave anterior, con propiedades tácticas opcionales validadas. Sin dependencias nuevas de producción.
 
-## Cambios RC2
+## Comprobaciones automáticas
 
-- El Bibliotecario tiene una corona animada de plumas y un rostro húmedo.
-- El Archivista tiene varios ojos y apéndices que se mueven.
-- El Primer Nombre tiene un halo fracturado y brasas orbitantes.
-- El Guardián tiene una aureola de hierro y máscara marcada.
-- Son detalles geométricos procedurales. No añaden mallas descargables ni cambian la lógica de combate.
-- Estos cambios visuales aún requieren inspección en navegador WebGL; no se consideran comprobados visualmente.
+- 44 scripts JavaScript: los 42 anteriores más `v60-tactics.js` y `v60-art.js`.
+- Sintaxis de los nueve archivos JavaScript de la aplicación; Python y Bash de los lanzadores.
+- Ruta completa automatizada: victoria en la profundidad IV en 224 acciones del guion, con tres personajes vivos. Este resultado prueba que existe una ruta de victoria; no demuestra diversión ni equilibrio para todos los estilos de juego.
+- Pruebas nuevas: intercepción, interrupción, recuperación, maná, avisos y persistencia de fase, pronósticos bloqueados por paredes, guardados anteriores y rechazo de campos tácticos inválidos.
+- Pruebas nuevas de arte: presencia de los 16 SVG originales y dibujo con imágenes cargadas de las once clases de criatura. XML de SVG, IDs HTML únicos y recursos HTML con rutas relativas comprobados.
+- La prueba histórica de ataques mentales se ajustó para muestrear el impacto del Bibliotecario después de su preparación. Se conserva la comprobación de pérdida de cordura, reducción del sello y límite de dos exposiciones.
+- CI actualizada para ejecutar todos los scripts JavaScript de `tests/`, incluido el test de encuentros v5.4 que faltaba en la lista anterior.
 
-## Comprobado
+## Revisión real en navegador
 
-- Los scripts JavaScript heredados de pruebas y la nueva prueba de rutas: pasan.
-- 8 archivos JavaScript de aplicación: sintaxis correcta.
-- Prueba nueva v50-release.js: pasa. Verifica los seis GLB con transformaciones en varias orientaciones, vértices finitos, hielo, caché y separación entre materiales dorados y agua.
-- En RC1 la partida de referencia completaba la cuarta profundidad tras 274 acciones; en RC3, el mismo guion termina tras 227.
-- Tres finales: resolución, persistencia y migración comprobadas por v40-endings.js.
-- Lanzador Linux: sintaxis Bash correcta. Lanzador Python: compilación correcta.
-- Prueba histórica v24-audio.js actualizada: acepta versiones posteriores de recursos y ampliaciones de catálogo. El contrato completo de audio actual sigue cubierto por v25-audio.js.
+Se abrió la aplicación en Chrome compartido mediante el servidor de vista previa. Se inspeccionaron las cuatro profundidades en Canvas y un escenario de jefe en fase II. Se comprobó visualmente la nueva ilustración del Confesor, sus avisos y la selección de Mara; al pulsar Corte del silencio el jefe perdió vida, su preparación se canceló y se activó la recuperación de cuatro turnos.
 
-## Pendiente antes de declarar una release estable
+También se comprobó la apertura/cierre de la guía, las páginas de Inventario/Códice/Ajustes, guardar/cargar y la activación/desactivación de audio. La exportación JSON mostró su mensaje de éxito, pero la herramienta no recogió el evento de descarga desde el iframe antes de agotar el tiempo: el archivo descargado y su reimportación no se consideran verificados en esta revisión de navegador. El contrato de guardados sigue cubierto por las pruebas Node.
 
-- Revisión visual de cada profundidad, modelos cercanos, orientación, iluminación y congelación en WebGL.
-- Interacción de la guía, ajustes, pantalla completa, guardado/carga y controles móviles en navegador.
-- Medición de rendimiento, contraste y legibilidad con hardware real.
-- Ejecución de lanzadores en Windows y Linux con escritorio.
-- Escucha y valoración humana del sonido, tensión, diversión y dificultad.
+A 390 px de anchura externa (375 px útiles por la barra de desplazamiento), el documento no presentó desbordamiento horizontal: `scrollWidth = clientWidth = 375`. La interfaz mostró los controles, retratos y pestañas en su distribución estrecha. Es una comprobación de ancho y clics, no una prueba en un teléfono físico.
 
-## Bloqueo observado
+Captura de la aplicación real, con el escenario preparado de jefe: [docs/evidence/v6-desktop.jpg](docs/evidence/v6-desktop.jpg). No es una captura de una partida completa jugada por una persona.
 
-Se intentó instalar Chromium mediante Playwright. La descarga devolvió un archivo inválido/truncado y no se pudo extraer. También se intentó abrir http://localhost:8044/ en el navegador compartido: net::ERR_CONNECTION_REFUSED. Las pruebas Node no equivalen a una inspección visual de WebGL. No hay capturas del resultado ni una puntuación de calidad inventada.
+## Muestra de rendimiento
 
-## Alcance artístico
+En el escenario Canvas del jefe, la instrumentación del controlador registró 148 dibujos durante una muestra de cinco segundos: 29,6 dibujos/s y 1,73 ms de CPU por llamada de dibujo de media. Se midió dentro del navegador compartido, no en hardware del usuario. Este dato no mide tiempo GPU ni constituye una garantía de FPS en otros dispositivos.
 
-Se han integrado las esculturas existentes en la campaña y mejorado su presentación. No se han creado seis monstruos nuevos ni animaciones esqueléticas. La edición conserva las reglas y contenido de combate previos; la comprobación automática demuestra que se puede completar, sin demostrar por sí sola el equilibrio subjetivo o la diversión.
-# v5.4 RC5 — Informe de entrega
+## Límites y revisión pendiente
 
-Fecha: 8 de noviembre de 2026.
+- En este Chrome, la petición de contexto WebGL no está disponible y el juego recupera Canvas. Se probó el selector y se observó esa recuperación. No se certifica el aspecto, la compilación real de shaders ni el rendimiento de WebGL; las pruebas con contexto simulado no sustituyen esa revisión.
+- No se han ejecutado los lanzadores en Windows ni Linux con escritorio físico, ni se han probado gestos en iOS/Android. Sólo sintaxis de lanzadores y diseño estrecho en navegador.
+- No se ha completado una partida humana de principio a fin, ni una escucha crítica de la banda sonora. Pantalla completa, archivo JSON descargado y reimportación real requieren su comprobación final en navegador compatible.
+- No se incorporan mallas nuevas de monstruos, rig esquelético, PBR ni iluminación global. Las esculturas anteriores se mantienen; el arte nuevo de criaturas corresponde al modo Canvas.
 
-## Bestiario cósmico
+## Reproducir la revisión
 
-- Se incorporan cuatro entidades móviles nuevas, una por profundidad: El Astrónomo Ciego, La Madre de la Marea, El Cartógrafo de la Herida y La Polilla del Último Cielo.
-- Cada criatura tiene geometría, color, movimiento visual, patrón de ataque y mensaje de horror propios. Dos especies pueden atacar a distancia con línea despejada.
-- Sus visiones reducen cordura como máximo dos veces por criatura, sólo cuando hay línea de visión y dentro de tres casillas. La Madre y el Cartógrafo también consumen 1 PM.
-- Las partidas previas migran los encuentros nuevos sin resucitar una criatura derrotada ya guardada en su casilla.
-- Canvas 2.5D y WebGL tienen representación diferenciada; ambas se verifican con contratos de render automatizados.
+Sirve la raíz del repositorio y abre `tests/browser-lab.html`. El banco permite preparar cada profundidad, el jefe, una anchura de 390 px y una muestra de dibujo. Restaura el guardado anterior después de cargar el escenario; pulsar GUARDAR dentro del juego sí sustituye la partida de ese origen, como en la aplicación normal.
 
-## Verificación
-
-- Sintaxis de engine.js, renderer.js y renderer3d.js correcta.
-- Todos los scripts de `tests/` pasan; incluye las pruebas históricas de campaña, migración, renderer con WebGL simulado y Canvas, más el contrato atmosférico v5.3.
-- Las pruebas no sustituyen la inspección en un navegador con GPU. La calidad final de la composición y el rendimiento real aún no se han visto en esta sesión.
-
-# v5.4 RC6 — Encuentros tácticos
-
-## Cambios
-
-- Cada horror cósmico anuncia un golpe de mayor intensidad un turno antes de ejecutarlo. El mensaje y el halo visual varían según criatura.
-- Durante el aviso, el jugador puede defenderse, alejarse o interrumpir al enemigo con Escarcha. Congelar una criatura durante el aviso cancela el golpe pendiente.
-- El estado del aviso queda dentro del guardado existente; se valida tanto en importación como al reanudar partida.
-
-## Comprobaciones
-
-- `tests/v54-encounters.js`: anuncio previo, sin daño durante el aviso, golpe siguiente, persistencia y congelación.
-- Todos los scripts de `tests/*.js` y comprobación sintáctica de los motores pasan.
-- No se ha completado una inspección visual en navegador real en esta fase; los contratos automatizados no sustituyen esa revisión ni validan por sí solos el equilibrio subjetivo.
-
-# v5.4 RC7 — Exploración y reliquias
-
-- Dos secretos tienen recompensas con efecto en sistemas centrales: +2 lucidez y +1 nivel de Santuario.
-- Todos los secretos siguen siendo opcionales, únicos por partida y compatibles con el registro existente.
-- `tests/v14.js` comprueba las dos recompensas y el resultado narrativo; toda la suite JavaScript pasa.
-- Persisten los límites de validación visual en navegador señalados en RC5 y RC6.
-
-# v5.4 RC8 — Sucesos con consecuencias
-
-- Se conectaron cuatro sucesos narrativos de las profundidades con recompensas/efectos de cordura, lucidez y esencia.
-- Efectos acotados y de una sola ejecución, ligados al registro `loreRead` existente; continúan guardándose en el formato actual.
-- La prueba `v52-adventure-route.js` verifica ubicación, consecuencia, round-trip de guardado y que revisitar no repita el efecto.
-- Suite completa JavaScript pasa. La inspección WebGL en navegador real continúa pendiente.
-
-# v5.4 — Candidata final de publicación
-
-Fecha: 8 de noviembre de 2026.
-
-## Pruebas ejecutadas en esta entrega
-
-- Todos los scripts de `tests/*.js`: correctos.
-- Sintaxis de `engine.js`, `renderer.js` y `renderer3d.js`: correcta.
-- Lanzador Linux (`bash -n`) y compilación Python de `launch.py`: correctos.
-- Integridad del ZIP: comprobada con `unzip -t`.
-
-## Pendiente de validación manual
-
-- No hay Chromium instalado en este entorno; no se completó la prueba visual WebGL/Canvas, el recorrido interactivo del navegador ni capturas.
-- No se ejecutaron los lanzadores en escritorios Windows/Linux físicos ni se midió rendimiento de GPU.
-- La campaña completa sí está cubierta por las pruebas automatizadas; eso no sustituye una sesión humana para valorar dificultad y ritmo.
-
-Esta entrega es funcionalmente completa según sus pruebas automatizadas. Para llamarla publicación verificada, aún hay que realizar la lista manual anterior en al menos un navegador de escritorio y un móvil.
-
+Antes de fusionar, revisar WebGL en un navegador con contexto disponible, exportar/importar un JSON y probar pantalla completa y controles en un móvil físico. La publicación permanece bajo decisión del propietario.

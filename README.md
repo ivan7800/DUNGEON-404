@@ -1,63 +1,73 @@
-# DUNGEON 404 — Midnight Terror · v5.4 Final Candidate
+# DUNGEON 404 — La Catedral de la Marea · v6.0
 
-Dungeon crawler por casillas de horror cósmico: cuatro expedicionarios, cuatro profundidades, cordura, investigación, rituales y tres finales. Estética propia de horror pulp ochentero con carmesí, ámbar y luz fría. Esta entrega reúne el bestiario cósmico, los encuentros tácticos, las reliquias y los sucesos con consecuencias. Las pruebas automatizadas pasan; la inspección visual en navegador y el rendimiento en hardware real quedan pendientes.
+Dungeon crawler por casillas y acciones: cuatro aventureros descienden por catedrales enterradas bajo un océano cósmico. La campaña conserva sus cuatro profundidades, investigación, rituales, equipo, cordura, ocho secretos y tres finales.
 
-Esta campaña conserva la progresión y los sistemas de juego construidos desde las versiones v4.2 y v4.3.
+La campaña continúa la progresión y los sistemas de las versiones v4.2 y v4.3.
+
+Esta rama presenta la revisión v6.0. No se ha fusionado ni publicado en GitHub Pages. Consulta [RELEASE-REPORT.md](RELEASE-REPORT.md) para distinguir lo comprobado de los límites de la revisión.
 
 ## Iniciar
 
-Necesitas Python 3 y un navegador moderno. No necesita cuentas, claves ni servicios externos.
+Necesitas Python 3 y un navegador moderno. Sin cuentas, claves, dependencias de producción ni servicios externos.
 
-- Windows: extrae todo el ZIP y ejecuta INICIAR-WINDOWS.bat.
+- Windows: extrae el proyecto y ejecuta `INICIAR-WINDOWS.bat`.
 - Linux: `chmod +x INICIAR-LINUX.sh` y `./INICIAR-LINUX.sh`.
-- Mantén abierta la ventana del servidor. Ctrl+C lo cierra.
-- Alternativa: `python3 -m http.server 8044 --bind 127.0.0.1`; abre http://localhost:8044/.
-- Mantener el puerto 8044 conserva el origen de los guardados anteriores. Exporta tu partida JSON antes de cambiar de navegador o dirección.
-- GitHub Pages: publica el contenido de esta carpeta. Las rutas son relativas; no requiere backend. El servidor local permite jugar sin conexión a Internet; no hay service worker ni instalación PWA.
+- Alternativa: `python3 -m http.server 8044 --bind 127.0.0.1`; abre `http://localhost:8044/`.
+- Mantén abierto el servidor. Mantener el puerto 8044 conserva el origen de los guardados. Exporta un JSON antes de cambiar de dirección o navegador.
+- GitHub Pages sirve la raíz del proyecto; todos los recursos usan rutas relativas compatibles con subdirectorios. No hay backend, service worker ni instalación PWA.
 
-## Cambios de esta edición
+## Identidad y presentación
 
-- Cuatro entidades nuevas, una por profundidad: Astrónomo Ciego, Madre de la Marea, Cartógrafo de la Herida y Polilla del Último Cielo. Cada una tiene silueta, paleta, ataque y efecto de cordura propios.
-- Los ataques mentales están limitados a dos exposiciones por criatura y requieren línea de visión. Las partidas existentes reciben los nuevos encuentros al importarse sin revivir enemigos derrotados que ocupen sus posiciones.
-- Se amplían los dibujos procedurales tanto del motor WebGL como del Canvas alternativo.
-- Los ataques fuertes ahora se anuncian un turno antes, con una señal pulsante sobre el enemigo y un mensaje exclusivo. El aviso queda guardado y puede interrumpirse congelando a la criatura.
-- Dos escondites ahora contienen reliquias con efectos jugables: lucidez para controlar la cordura y un sello que protege durante el siguiente encuentro. El resto mantiene sus consumibles; los ocho secretos siguen siendo opcionales.
-- Cuatro sucesos de exploración de una sola aparición tienen ahora consecuencias propias: lucidez, cordura, esencia o recuperación de cordura. Sus efectos se guardan junto al diario y no se repiten al volver a la casilla.
+Piedra oscura, hueso tallado, latón envejecido y luz de marea. Un sello original une el nombre de la expedición, cuatro retratos y once ilustraciones vectoriales de criaturas en Canvas. La arquitectura WebGL incorpora vanos de arco apuntado, tracerías y columnas: libros en la Biblioteca, marcas de astrolabio en el Laberinto y nichos óseos en el Osario.
 
-- Antorchas fijadas a los muros, luz más localizada y piedra con vetas, humedad, grietas y manchas menos repetitivas.
-- Dinteles voluminosos sustituidos por nervaduras góticas finas, para despejar el techo de la vista en primera persona.
-- Aparición ilusoria en los primeros turnos y cuando cae mucho la cordura; no tiene colisión ni participa en el combate.
-- Rastros de sangre en la Cripta, marcas arcanas en el Laberinto y restos óseos en el Osario.
+La vista ocupa el centro. La compañía, el mapa y la cordura permanecen accesibles; el códice reúne Juramento, Inventario, Códice y Ajustes y partida. Las artes y recursos adicionales se despliegan bajo las cuatro acciones principales. El diseño se adapta a una columna y retratos en dos columnas en pantallas estrechas.
 
-- Cada profundidad tiene una ruta más diferenciada; la Biblioteca y el Laberinto dejan de reutilizar el trazado anterior, y el Osario reduce los rodeos hacia la runa y el jefe final.
-- Dos sucesos de horror por profundidad aparecen una sola vez al explorar. Se guardan en la partida y no cambian combate ni colisiones.
-- El recorrido automático de la campaña baja de 274 a 227 acciones en la comprobación reproducible incluida.
+El modo Canvas conserva el arte procedural como recuperación si no carga una ilustración. WebGL mantiene las seis esculturas GLB y sus animaciones procedurales; esta revisión no incorpora rig esquelético ni texturas PBR. Las ilustraciones nuevas son SVG originales editables, sin fuentes ni servicios remotos.
 
-- Los modelos esculpidos de Guardián, Larva y Espectro se usan en la campaña; antes requerían activar la opción del laboratorio. Los tres modelos abisales siguen disponibles en la Biblioteca.
-- Todos los modelos se precargan con recuperación al arte procedural si no se pueden descargar. Son seis esculturas existentes, sin nuevas mallas ni rig esquelético.
-- Orientación de los modelos hacia el jugador, material de hielo al congelarlos, detalle de piel en coordenadas del mundo y luz de contorno.
-- Corrección del material dorado: ya no comparte el shader del agua negra.
-- Cadencia visual objetivo de 30 imágenes por segundo, con modo económico de 12. Es una cadencia solicitada, no una medición de rendimiento.
-- Guía de supervivencia accesible, pantalla completa, acabado de película opcional y preferencias visuales persistentes.
-- Nuevos mensajes de entrada a las profundidades y avisos de jefes próximos. No consumen acciones adicionales.
-- Lanzadores consistentes que sirven sólo en la interfaz local y explican errores de inicio.
+## Combate y especialidades
 
-## Jugar
+Selecciona un personaje con 1–4 o su retrato. Cada personaje tiene una especialidad en el botón principal o con Enter cuando el foco está en el juego. Leer páginas, seleccionar un héroe y girar no consumen turnos. Avanzar, atacar y usar habilidades ejecuta la respuesta enemiga.
 
-Pulsa CÓMO SOBREVIVIR para consultar los controles. El juego avanza por acciones; no necesitas reaccionar a tiempo real. Selecciona héroe con 1–4; W/S avanza/retrocede, A/D gira, Q/R desplaza lateralmente. Espacio ataca, G defiende, F conjura, H usa poción, J esencia, E interactúa, Z busca, X desactiva trampas, T descansa.
+| Personaje | Especialidad | Coste y recuperación |
+| --- | --- | --- |
+| Aldric | Juramento de hierro: intercepta los golpes de una fase y bloquea 6 PV de cada uno | 3 turnos tras el uso |
+| Mara | Corte del silencio: daño reforzado adyacente e interrupción de una fase | 4 turnos tras el uso |
+| Ilyra | Escarcha del Olvido: daño y congelación hasta dos casillas | 7 PM; 3 turnos tras el uso |
+| Borin | Santuario de la marea: reduce en 3 PV cada golpe durante tres fases, incluida la de lanzamiento | 6 PM; 3 turnos tras el uso |
 
-El botón de sonido permite activar la música adaptativa y ajustar música, ambiente y efectos por separado. PELÍCULA quita el tratamiento visual. FLUIDEZ cambia la cadencia. El selector de motor permite usar Canvas si WebGL no está disponible.
+Los conjuros antiguos siguen disponibles en el desplegable, con sus costes y reglas anteriores. Una especialidad sin objetivo, sin maná o en recuperación no consume un turno.
 
-## Campaña y finales
+La barra bajo la escena muestra enemigos en línea de visión, vida, fase y ataques preparados. Los jefes preparan golpes fuertes; por debajo de la mitad de vida lo hacen con mayor frecuencia y fuerza. El Confesor pierde su armadura en fase II, el Bibliotecario aumenta el drenaje y el Archivista gana alcance. Interrumpir, congelar o romper la línea de visión son alternativas a recibir el golpe; la protección del grupo también ayuda.
 
-La campaña implementada recorre Cripta, Biblioteca Sumergida, Laberinto Olvidado y Osario del Primer Nombre. Los antiguos nombres de actos de COSMIC-DESIGN.md pertenecen al documento conceptual; no son niveles adicionales anunciados para esta entrega.
+## Controles y accesibilidad
 
-- El Silencio: completar la campaña por la ruta estándar.
-- El Pacto de la Marea: completar el Ritual del Silencio y elegir Sellar la Marea.
-- El Sueño Invertido: escuchar la Marea, investigar ambos manuscritos y conservar al menos 4 de Lucidez al terminar.
+- W/S o flechas arriba/abajo: avanzar y retroceder. A/D o flechas izquierda/derecha: girar. Q/R: paso lateral.
+- Espacio: atacar; G: defender; Enter: especialidad; E: interactuar.
+- F: conjuro; B: Santuario; C: Escarcha; V: Pulso; H: poción; J: esencia; T: descansar; N: pergamino.
+- Z: buscar; X: desactivar trampas; I: investigar; O: rito; K: leer tomo; L: recuperar cordura; U: manuscrito; Y/P: sellar/escuchar marea; M: mostrar/ocultar mapa.
+- Las pestañas admiten flechas izquierda/derecha, Inicio y Fin. Los botones mantienen su activación nativa con teclado. La guía abierta bloquea atajos de juego.
+- Ajustes y partida contiene el selector WebGL/Canvas, guardado/carga, JSON y mezclador de audio. La barra superior conserva ayuda, viñeta, fluidez y pantalla completa.
 
-Los desenlaces son variantes narrativas, sin cinemáticas específicas.
+La cordura es compartida. Modifica la atmósfera y las posibilidades narrativas; no bloquea controles ni oculta los indicadores de juego. El medidor expone su valor accesible. Se respeta la preferencia de movimiento reducido en la interfaz.
 
-## Comprobaciones y límites
+## Guardados y finales
 
-Consulta RELEASE-REPORT.md. La campaña y las pruebas automatizadas pasan. No se ha conseguido abrir el juego en un navegador durante esta entrega: Chromium no pudo descargarse y el navegador compartido rechazó el acceso al servidor local. No se afirman calidad visual verificada, FPS medidos, funcionamiento táctil comprobado ni pruebas en Windows físico. La animación es procedural y la iluminación es aproximada; no hay sombras físicas, texturas PBR ni iluminación global.
+Se conserva la clave `dungeon404-save-v16` y el esquema 16. Las propiedades tácticas nuevas son opcionales y validadas: recuperación de habilidades, fase de jefe e interrupción. Las migraciones anteriores permanecen. Usar habilidades y cargar una partida mantienen sus recuperaciones y avisos de ataque.
+
+- **El Silencio:** ruta estándar.
+- **El Pacto de la Marea:** rito de la Cripta completado y Marea sellada.
+- **El Sueño Invertido:** Marea escuchada, ambos manuscritos y al menos 4 de Lucidez al terminar.
+
+La interfaz explica los costes y consecuencias antes de confirmar la decisión irreversible del altar. Los desenlaces son variantes narrativas, sin cinemáticas nuevas.
+
+## Comprobaciones
+
+Ejecuta todos los scripts de reglas y contratos con Node:
+
+```sh
+for test in tests/*.js; do node "$test" || exit 1; done
+```
+
+`tests/browser-lab.html` ofrece escenarios reproducibles de las cuatro plantas y un jefe en fase II, una vista de 390 px y una medición de dibujo. Utiliza la interfaz real; restaura el guardado anterior tras cargar cada escenario. No pulses Guardar en un escenario si deseas conservar tu partida local. Este banco es para revisión manual, no una prueba automática de navegador.
+
+La instrumentación informa tiempo CPU de dibujo y frecuencia observada en el navegador que la ejecuta; no mide GPU ni certifica rendimiento en un equipo físico. El informe de entrega detalla la revisión de Canvas y la indisponibilidad de WebGL en el navegador compartido.

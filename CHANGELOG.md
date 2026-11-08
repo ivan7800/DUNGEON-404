@@ -1,3 +1,17 @@
+# v6.0 — La Catedral de la Marea (rama de revisión)
+
+- Identidad medieval cósmica: sello propio, cuatro retratos y once ilustraciones originales de criaturas para Canvas.
+- Interfaz reorganizada con cuatro acciones principales, artes desplegables, amenaza visible y códice con navegación por teclado.
+- Vanos góticos, columnas, tracerías y mobiliario por profundidad en WebGL; atlas de ventanales en Canvas.
+- Especialidades del guerrero y la pícara; acceso rápido a las artes de maga y clérigo con recuperación por turnos.
+- Golpes de jefe preparados, segunda fase y diferencias de armadura, drenaje y alcance.
+- Conservación del esquema 16, con propiedades tácticas opcionales validadas.
+- Confirmación narrativa del altar con costes y consecuencias; guía bloquea atajos mientras está abierta.
+- Banco manual de escenarios, medición de dibujo y pruebas de tácticas. CI ejecuta todos los scripts JavaScript de tests.
+- Revisión en navegador compartido de Canvas, controles y diseño estrecho; WebGL y rendimiento físico pendientes según RELEASE-REPORT.md.
+
+---
+
 # v5.3 RC4 — Haunted Corridors
 
 - Antorchas montadas en paredes con luz localizada; dejan de aparecer suspendidas en el centro de la ruta.

@@ -4,6 +4,8 @@ function attackWith(type,ritual='none'){
  const s=core.createGame();s.floor=2;s.x=4;s.y=3;s.drownedRitual=ritual;
  s.monsters=s.monsters.filter(m=>m.floor===2 && m.cosmicType===type);
  const m=s.monsters[0];m.x=5;m.y=3;s.turn=2;
+ // Sample the impact phase: boss wind-up is covered by v60-tactics.
+ if(m.kind==='king')m.telegraph=true;
  const events=core.dispatch(s,'guard',()=>0.5);
  return {s,m,events};
 }
@@ -19,8 +21,8 @@ for(const type of Object.keys(core.COSMIC_ENEMIES)){
  const listened=attackWith(type,'listen');assert.equal(listened.s.lucidity,1);
  // A maximum of two mental strikes prevents infinitely farming lucidity.
  const s=listened.s,m=listened.m;
- s.turn=5;core.dispatch(s,'guard',()=>0.5);assert.equal(m.mindStrikes,2);
- s.turn=8;core.dispatch(s,'guard',()=>0.5);assert.equal(m.mindStrikes,2);assert.equal(s.lucidity,2);
+ s.turn=5;if(m.kind==='king')m.telegraph=true;core.dispatch(s,'guard',()=>0.5);assert.equal(m.mindStrikes,2);
+ s.turn=8;if(m.kind==='king')m.telegraph=true;core.dispatch(s,'guard',()=>0.5);assert.equal(m.mindStrikes,2);assert.equal(s.lucidity,2);
 }
 const legacy=core.createGame();legacy.monsters.filter(m=>m.floor===2).forEach(m=>{delete m.cosmicType;delete m.mindStrikes});
 const migrated=core.importSave(legacy);assert(migrated);assert.equal(migrated.monsters.filter(m=>m.floor===2&&m.cosmicType).length,3);

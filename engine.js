@@ -300,10 +300,10 @@
   const BESTIARY = Object.freeze({
     lurker:{title:'Penitente sin rostro',trait:'Persigue al grupo entre los sepulcros y responde al movimiento cercano.'},
     crawler:{title:'Carroñero óseo',trait:'Se impulsa dos casillas cada tercer turno si el camino está despejado.'},
-    warden:{title:'Confesor desollado',trait:'Su armadura ritual resiste 2 puntos de daño físico.'},
+    warden:{title:'Confesor desollado',trait:'Su armadura resiste 2 PV; en fase II se abre y anuncia golpes más fuertes.'},
     specter:{title:'Espectro hambriento',trait:'Puede alcanzar con su aliento frío desde dos casillas en línea recta.'},
-    king:{title:'Rey sin Rostro',trait:'Cada cuarto turno cercano intenta drenar maná.'},
-    archivist:{title:'Archivista Vacío',trait:'Drena maná y ataca con un poderoso pulso de vacío.'},
+    king:{title:'Rey sin Rostro',trait:'Drena 2 PM cada cuarto turno de ataque; en fase II drena 3 PM.'},
+    archivist:{title:'Archivista Vacío',trait:'Drena maná; en fase II su pulso alcanza dos casillas en línea recta.'},
     firstname:{title:'El Primer Nombre',trait:'Resiste ataques físicos y roba el eco de la magia.'},
     starseer:{title:'El Astrónomo Ciego',trait:'Alinea las estrellas antes de lanzar un rayo por tres casillas despejadas; la visión hiere la cordura.'},
     chorus:{title:'La Madre de la Marea',trait:'Abre sus bocas antes de atacar; su canto puede drenar cordura y maná.'},
@@ -351,6 +351,43 @@
     }
     report(s,`${m.name} ${vision.text}: cordura -${vision.loss}.${suffix}`,events,'warning');
   }
+  const BOSS_KINDS=['warden','king','archivist','firstname'];
+  const SPECIALTIES=Object.freeze({
+    Guerrero:{name:'Juramento de hierro',detail:'Intercepta todos los golpes de esta fase y bloquea 6 PV de cada uno. Recuperación: 3 turnos.',cooldown:3},
+    Pícara:{name:'Corte del silencio',detail:'Golpea al enemigo adyacente con daño reforzado e interrumpe su ataque durante una fase. Recuperación: 4 turnos.',cooldown:4},
+    Maga:{name:'Escarcha del Olvido',detail:'7 PM. Alcanza dos casillas; hiere y congela durante dos fases. Recuperación: 3 turnos.',cooldown:3},
+    Clérigo:{name:'Santuario de la marea',detail:'6 PM. Reduce en 3 PV cada golpe recibido por el grupo durante tres fases. Recuperación: 3 turnos.',cooldown:3}
+  });
+  function signature(s,events,rng){
+    const p=s.party[s.selected],spec=SPECIALTIES[p?.role];
+    if(!p||p.hp<=0||!spec){report(s,'Selecciona a un aventurero vivo.',events,'warning');return;}
+    if((p.skillReadyAt||0)>s.turn){report(s,`La especialidad estará lista en ${p.skillReadyAt-s.turn} turnos.`,events,'warning');return;}
+    const before=s.turn;
+    if(p.role==='Guerrero'){
+      s.intercept=s.selected;s.guard=s.selected;
+      report(s,'Aldric se interpone: todos los ataques de esta fase recaen sobre su guardia.',events,'guard');
+      enemyTurn(s,events,rng);
+    }else if(p.role==='Pícara'){
+      const [dx,dy]=DIRS[s.dir],m=monsterAt(s,s.x+dx,s.y+dy);
+      if(!m){report(s,'Mara necesita un enemigo en la casilla de enfrente.',events,'warning');return;}
+      const damage=Math.max(1,p.damage+(GEAR[p.equippedWeapon]?.bonus||0)+4+p.level);
+      m.hp=Math.max(0,m.hp-damage);m.telegraph=false;m.staggered=m.hp?1:0;
+      if(!m.hp)reward(s,m,events);
+      report(s,`Mara corta el canto de ${m.name}: ${damage} de daño y una fase interrumpida.`,events,'attack');
+      enemyTurn(s,events,rng);
+    }else if(p.role==='Maga')frost(s,events,rng);
+    else ward(s,events,rng);
+    if(s.turn>before)p.skillReadyAt=s.turn+spec.cooldown;
+  }
+  // Readable forecast uses the same range and line-of-sight rules as enemyTurn.
+  function threats(s){
+    return s.monsters.filter(m=>m.hp>0&&(m.floor||1)===s.floor&&inLineOfSight(s,m,3)).map(m=>{
+      const d=distance(m,s),ranged=((m.kind==='specter'||(m.kind==='archivist'&&m.phaseAwakened))&&d===2)||(m.kind==='starseer'&&d<=3)||(m.kind==='cartographer'&&d===3)||(m.kind==='voidmoth'&&d===2);
+      return {name:m.name,hp:m.hp,max:m.max,phase:BOSS_KINDS.includes(m.kind)&&m.hp<=m.max/2?2:1,
+        text:m.frozen||m.staggered?'INMOVILIZADO':m.telegraph&&(d===1||ranged)?'ATAQUE PREPARADO · defiende, interrumpe o rompe la línea de visión':d===1||ranged?'EN ALCANCE · puede atacar en tu próxima acción':'SE APROXIMA',
+        danger:!m.frozen&&!m.staggered&&!!m.telegraph&&(d===1||ranged)};
+    });
+  }
   function enemyTurn(s, events, rng) {
     if(s.won||s.dead) return;
     s.turn++;
@@ -358,31 +395,38 @@
     if(wardActive)s.ward--;
     for(const m of s.monsters){
       if(m.hp<=0 || (m.floor||1)!==s.floor) continue;
+      if(m.staggered>0){m.staggered--;report(s,`${m.name} recompone su postura tras el corte de Mara.`,events,'guard');continue;}
       if(m.frozen>0){m.frozen--;report(s,`${m.name} permanece inmóvil bajo el hielo.`,events,'frost');continue;}
       const d=distance(m,s);
-      const ranged=(m.kind==='specter'&&d===2&&inLineOfSight(s,m))||
+      const boss=BOSS_KINDS.includes(m.kind);
+      if(boss&&m.hp<=m.max/2&&!m.phaseAwakened){
+        m.phaseAwakened=true;
+        report(s,`${m.name} rompe su sello: FASE II. ${m.kind==='warden'?'Su armadura se abre, pero el golpe anunciado será más fuerte.':m.kind==='king'?'Su drenaje aumenta a 3 PM; el golpe anunciado será más fuerte.':m.kind==='archivist'?'Su pulso alcanza dos casillas; el golpe anunciado será más fuerte.':'El golpe anunciado rasgará el velo con más fuerza.'}`,events,'warning');
+      }
+      const ranged=((m.kind==='specter'||(m.kind==='archivist'&&m.phaseAwakened))&&d===2&&inLineOfSight(s,m))||
         (m.kind==='starseer'&&d<=3&&inLineOfSight(s,m,3))||
         (m.kind==='cartographer'&&d===3&&inLineOfSight(s,m,3))||
         (m.kind==='voidmoth'&&d===2&&inLineOfSight(s,m));
       roamerAssault(s,m,events,d);
       if(d===1||ranged){
         const cosmicRoamer=Object.hasOwn(ROAMER_VISIONS,m.kind);
-        if(cosmicRoamer&&!m.telegraph){
+        if((cosmicRoamer||(boss&&(s.turn%3===0||m.hp<=m.max/2)))&&!m.telegraph){
           m.telegraph=true;
           const warning={
             starseer:'El Astrónomo inclina el rostro vacío; las estrellas se alinean sobre la compañía.',
             chorus:'La Madre abre sus tres bocas. El agua de las paredes empieza a cantar.',
             cartographer:'El Cartógrafo traza una herida luminosa en el aire. Algo va a cruzarla.',
             voidmoth:'La Polilla extiende sus alas y cubre la luz. Un polvo negro cae sobre vosotros.'
-          }[m.kind];
+          }[m.kind]||`${m.name} eleva su arma ritual. El próximo golpe será devastador: defiende o interrumpe.`;
           report(s,warning,events,'warning');
           continue;
         }
         const living=s.party.filter(p=>p.hp>0);
         if(!living.length) break;
-        const target=living[(s.turn+m.x)%living.length];
+        const protector=s.party[s.intercept];
+        const target=Number.isInteger(s.intercept)&&protector?.hp>0?protector:living[(s.turn+m.x)%living.length];
         let amount=Math.max(1,m.damage-target.defense-(GEAR[target.equippedArmor]?.bonus||0)+rngInt(rng,3)-1);
-        if(cosmicRoamer&&m.telegraph){amount=Math.ceil(amount*1.35);m.telegraph=false;}
+        if((cosmicRoamer||boss)&&m.telegraph){amount=Math.ceil(amount*(boss&&m.hp<=m.max/2?1.65:1.35));m.telegraph=false;}
         if(wardActive)amount=Math.max(0,amount-3);
         if(ranged)amount=Math.max(1,amount-2);
         if(s.guard===s.party.indexOf(target)){
@@ -395,7 +439,7 @@
         psychicAssault(s,m,events);
         if((m.kind==='king'||m.kind==='archivist'||m.kind==='firstname') && s.turn%4===0){
           const caster=living.find(p=>p.mana>0);
-          if(caster){caster.mana=Math.max(0,caster.mana-2);report(s,`${m.name} absorbe 2 PM de la compañía.`,events,'spell');}
+          if(caster){const drain=m.kind==='king'&&m.phaseAwakened?3:2;caster.mana=Math.max(0,caster.mana-drain);report(s,`${m.name} absorbe ${drain} PM de la compañía.`,events,'spell');}
         }
       } else if(d<=4 && s.turn%2===0){
         const tryMove=()=>{
@@ -409,7 +453,7 @@
         if(advanced && m.kind==='crawler' && s.turn%6===0 && distance(m,s)>1)tryMove();
       }
     }
-    s.guard=null;
+    s.guard=null;delete s.intercept;
     if(s.party.every(p=>p.hp===0)){
       s.dead=true;
       report(s,'La compañía ha caído. Carga una partida o comienza de nuevo.',events,'defeat');
@@ -585,7 +629,7 @@
     if(!p||p.hp<=0){report(s,'Elige a un aventurero vivo.',events,'warning');return;}
     const [dx,dy]=DIRS[s.dir],m=monsterAt(s,s.x+dx,s.y+dy);
     if(!m){report(s,'El acero silba en el vacío.',events);enemyTurn(s,events,rng);return;}
-    const armor=m.kind==='warden'?2:m.kind==='firstname'?3:0;
+    const armor=m.kind==='warden'?(m.phaseAwakened?0:2):m.kind==='firstname'?3:0;
     const damage=Math.max(1,p.damage-armor+(GEAR[p.equippedWeapon]?.bonus||0)+rngInt(rng,5)-2);
     m.hp=Math.max(0,m.hp-damage);
     if(m.hp===0)reward(s,m,events);
@@ -643,7 +687,7 @@
     p.mana-=7;
     const damage=7+p.level*2+(p.equippedWeapon==='staff'?GEAR.staff.bonus:0);
     target.hp=Math.max(0,target.hp-damage);
-    target.frozen=target.hp>0?2:0;
+    target.frozen=target.hp>0?2:0;target.telegraph=false;
     if(target.hp===0)reward(s,target,events);
     report(s,`Ilyra congela a ${target.name}: ${damage} de daño y hasta dos turnos inmóvil.`,events,'frost');
     enemyTurn(s,events,rng);
@@ -736,6 +780,7 @@
     else if(action==='back')move(s,...DIRS[(s.dir+2)%4],events,rng);
     else if(action==='strafeLeft')move(s,...DIRS[(s.dir+3)%4],events,rng);
     else if(action==='strafeRight')move(s,...DIRS[(s.dir+1)%4],events,rng);
+    else if(action==='signature')signature(s,events,rng);
     else if(action==='attack')attack(s,events,rng);
     else if(action==='guard')guard(s,events,rng);
     else if(action==='interact')interact(s,events);
@@ -795,14 +840,14 @@
       Array.isArray(s.party)&&s.party.length===4&&s.party.every(p=>p&&typeof p.name==='string'&&p.name.length<50&&
         typeof p.role==='string'&&typeof p.weapon==='string'&&typeof p.armor==='string'&&
         Number.isFinite(p.hp)&&Number.isFinite(p.max)&&p.max>0&&p.max<10000&&p.hp>=0&&p.hp<=p.max&&
-        natural(p.level,1000)&&p.level>=1&&natural(p.xp)&&natural(p.mana)&&natural(p.maxMana,10000)&&p.mana<=p.maxMana&&
+        (p.skillReadyAt===undefined||natural(p.skillReadyAt,100000))&&natural(p.level,1000)&&p.level>=1&&natural(p.xp)&&natural(p.mana)&&natural(p.maxMana,10000)&&p.mana<=p.maxMana&&
         Number.isFinite(p.damage)&&Number.isFinite(p.defense))&&
       Array.isArray(s.monsters)&&s.monsters.length<=28&&s.monsters.every(m=>m&&coord(m,m.floor)&&
-        (m.telegraph===undefined||typeof m.telegraph==='boolean')&&
+        (m.telegraph===undefined||typeof m.telegraph==='boolean')&&(m.phaseAwakened===undefined||typeof m.phaseAwakened==='boolean')&&
         (m.cosmicType===undefined||((m.floor||1)===2&&Object.hasOwn(COSMIC_ENEMIES,m.cosmicType)))&&
         (m.mindStrikes===undefined||natural(m.mindStrikes,2))&&
         typeof m.name==='string'&&m.name.length<100&&Number.isFinite(m.hp)&&m.hp>=0&&m.hp<=m.max&&
-        (m.frozen===undefined||natural(m.frozen,2))&&Number.isFinite(m.max)&&m.max>0&&m.max<10000&&Number.isFinite(m.damage))&&
+        (m.staggered===undefined||natural(m.staggered,1))&&(m.frozen===undefined||natural(m.frozen,2))&&Number.isFinite(m.max)&&m.max>0&&m.max<10000&&Number.isFinite(m.damage))&&
       Array.isArray(s.visited)&&s.visited.length<=WIDTH*HEIGHT&&s.visited.every(k=>typeof k==='string'&&/^\d+,\d+$/.test(k))&&
       Array.isArray(s.items)&&s.items.length<=30&&s.items.every(k=>typeof k==='string'&&/^\d+,\d+$/.test(k))&&
       Array.isArray(s.messages)&&s.messages.length<=50&&s.messages.every(t=>typeof t==='string'&&t.length<500);
@@ -875,5 +920,5 @@
     return s;
   }
   return {VERSION,SAVE_KEY,V15_SAVE_KEY,V14_SAVE_KEY,V13_SAVE_KEY,SECRETS,V12_SAVE_KEY,V11_SAVE_KEY,V10_SAVE_KEY,V9_SAVE_KEY,V8_SAVE_KEY,V7_SAVE_KEY,PREVIOUS_SAVE_KEY,V5_SAVE_KEY,LEGACY_SAVE_KEY,V4_SAVE_KEY,LEVEL,LOWER,LABYRINTH,ABYSS,COSMIC_CLUES,FORBIDDEN_TOMES,DROWNED_TEXTS,COSMIC_ENEMIES,ENDINGS,resolveEnding,WIDTH,HEIGHT,DIRS,LORES,TRAPS,GEAR,BESTIARY,PORTCULLIS,PRESSURE_PLATE,gateAt,
-    tile,wallAt,passable,createGame,monsterAt,dispatch,validGame,importSave};
+    SPECIALTIES,threats,tile,wallAt,passable,createGame,monsterAt,dispatch,validGame,importSave};
 });

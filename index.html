@@ -3,49 +3,47 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#120b10">
+  <meta name="theme-color" content="#071517">
   <meta name="description" content="DUNGEON 404: dungeon crawler original en primera persona, gratuito, offline y jugable en navegador.">
-  <title>DUNGEON 404 · Midnight Terror · v5.4 RC8</title>
-  <link rel="stylesheet" href="style.css?v=57">
+  <title>DUNGEON 404 · La Catedral de la Marea · v6.0</title>
+  <link rel="stylesheet" href="style.css?v=60">
 </head>
 <body>
 <main class="shell">
   <header class="masthead">
-    <div class="brand"><span class="brand-glyph" aria-hidden="true">◈</span><div>
-      <p class="kicker">UN DESCENSO SIN RETORNO</p>
+    <div class="brand"><span class="brand-glyph" aria-hidden="true"><img src="assets/art/seal.svg" alt=""></span><div>
+      <p class="kicker">UN JURAMENTO BAJO LAS ESTRELLAS</p>
       <h1>DUNGEON <em>404</em></h1>
-      <p class="subtitle">MIDNIGHT TERROR</p>
+      <p class="subtitle">LA CATEDRAL DE LA MAREA</p>
     </div></div>
-    <div class="build-meta"><span class="version">v5.4 RC8 · ECOS DE PROFUNDIDAD</span><span>HORROR CÓSMICO · CINE PULP DE LOS 80</span></div>
-  </header>
+    <div class="build-meta"><span class="version">CRÓNICAS DEL NOMBRE ANTERIOR</span><span>FANTASÍA MEDIEVAL · HORROR CÓSMICO</span></div></header>
   <section class="story-intro" aria-label="Prólogo">
     <span class="ornament" aria-hidden="true">✥</span>
-    <p>«Hay nombres que no designan a los dioses. Son las palabras con las que los dioses sueñan nuestra existencia.»</p>
+    <p>El mar cubrió las catedrales. Algo siguió rezando debajo.</p>
     <span class="ornament" aria-hidden="true">✥</span>
   </section>
   <div class="game">
     <section class="main-column" aria-label="Mazmorra">
-      <div class="top-status"><span><span class="pulse" aria-hidden="true"></span> EXPLORACIÓN ACTIVA</span><span id="location">PROFUNDIDAD I · ESTE</span></div>
-      <div class="graphics-chooser"><a href="art-lab.html" style="color:#d9bb86;margin-right:10px" target="_blank" rel="noopener">LABORATORIO VISUAL 3D</a><label for="graphics-mode">MOTOR GRÁFICO</label><select id="graphics-mode" aria-label="Motor gráfico"><option value="auto">AUTO · WEBGL 3D</option><option value="webgl">WEBGL 3D</option><option value="canvas">CLÁSICO · CANVAS 2.5D</option></select><span id="graphics-status" role="status">Cargando motor…</span></div>
+      <div class="top-status"><span>EL DESCENSO · POR TURNOS</span><span id="location">PROFUNDIDAD I · ESTE</span></div>
       <div class="viewport" id="view-container" data-perception="stable">
         <canvas id="view" width="960" height="600" aria-label="Vista de la mazmorra en primera persona con paredes y enemigos"></canvas>
         <div class="view-decor view-decor-tl" aria-hidden="true"></div>
         <div class="view-decor view-decor-br" aria-hidden="true"></div>
         <div class="hud"><span id="area">LA CRIPTA DE LOS SUSURROS</span><span id="message" role="status" aria-live="polite">La piedra está húmeda.</span></div>
       </div>
-      <section class="control-panel" aria-label="Controles del juego">
-        <div class="control-heading"><span>CONTROL DEL AVENTURERO</span><span class="key-tip">W A S D · Q R · ESPACIO · C</span></div>
-        <div class="controls travel">
-          <button type="button" data-action="left" title="A: girar a la izquierda"><span>↶</span><small>GIRAR</small></button>
-          <button type="button" data-action="strafeLeft" title="Q: paso a la izquierda"><span>←</span><small>LATERAL</small></button>
-          <button type="button" data-action="forward" title="W: avanzar"><span>↑</span><small>AVANZAR</small></button>
-          <button type="button" data-action="back" title="S: retroceder"><span>↓</span><small>RETROCEDER</small></button>
-          <button type="button" data-action="strafeRight" title="R: paso a la derecha"><span>→</span><small>LATERAL</small></button>
-          <button type="button" data-action="right" title="D: girar a la derecha"><span>↷</span><small>GIRAR</small></button>
+      <div id="encounter-intent" role="status" class="encounter-intent" aria-live="polite"></div><section class="control-panel" aria-label="Controles del juego">
+        <div class="control-heading">CADA PASO TIENE UN PRECIO · LAS AMENAZAS ESPERAN TU ACCIÓN</div><div class="controls travel">
+          <button type="button" aria-label="Girar a la izquierda · A" data-action="left" title="A: girar a la izquierda"><span>↶</span><small>GIRAR</small></button>
+          <button type="button" aria-label="Paso lateral izquierdo · Q" data-action="strafeLeft" title="Q: paso a la izquierda"><span>←</span><small>LATERAL</small></button>
+          <button type="button" aria-label="Avanzar · W" data-action="forward" title="W: avanzar"><span>↑</span><small>AVANZAR</small></button>
+          <button type="button" aria-label="Retroceder · S" data-action="back" title="S: retroceder"><span>↓</span><small>RETROCEDER</small></button>
+          <button type="button" aria-label="Paso lateral derecho · R" data-action="strafeRight" title="R: paso a la derecha"><span>→</span><small>LATERAL</small></button>
+          <button type="button" aria-label="Girar a la derecha · D" data-action="right" title="D: girar a la derecha"><span>↷</span><small>GIRAR</small></button>
         </div>
-        <div class="controls combat">
-          <button type="button" data-action="attack" class="action-primary"><span>⚔</span> ATACAR <kbd>ESP</kbd></button>
+        <div class="controls primary-actions"><button type="button" data-action="attack" class="action-primary"><span>⚔</span> ATACAR <kbd>ESP</kbd></button>
           <button type="button" data-action="guard"><span>⛨</span> DEFENDER <kbd>G</kbd></button>
+          <button type="button" id="signature-action" data-action="signature">ESPECIALIDAD</button><button type="button" data-action="interact"><span>◈</span> INTERACTUAR <kbd>E</kbd></button>
+          </div><p id="ability-hint" class="ability-hint"></p><details class="advanced-actions"><summary>ARTES, EXPLORACIÓN Y RECURSOS</summary><div class="controls combat">
           <button type="button" data-action="spell"><span>✧</span> CONJURO <kbd>F</kbd></button>
           <button type="button" data-action="ward"><span>✥</span> SANTUARIO <kbd>B</kbd></button>
           <button type="button" data-action="frost"><span>❄</span> ESCARCHA <kbd>C</kbd></button>
@@ -53,31 +51,41 @@
           <button type="button" data-action="search"><span>⌕</span> BUSCAR <kbd>Z</kbd></button>
           <button type="button" data-action="investigate"><span>☷</span> INVESTIGAR <kbd>I</kbd></button>
           <button type="button" data-action="ritual"><span>◉</span> RITO <kbd>O</kbd></button>
-          <button type="button" data-action="interact"><span>◈</span> INTERACTUAR <kbd>E</kbd></button>
           <button type="button" data-action="potion"><span>♥</span> POCIÓN <kbd>H</kbd></button>
           <button type="button" data-action="ether"><span>✦</span> ESENCIA <kbd>J</kbd></button>
           <button type="button" data-action="rest"><span>☾</span> DESCANSAR <kbd>T</kbd></button>
           <button type="button" data-action="scroll"><span>▤</span> PERGAMINO <kbd>N</kbd></button>
           <button type="button" data-action="disarm"><span>⛓</span> DESACTIVAR <kbd>X</kbd></button>
         </div>
-      </section>
+      </details></section>
       <section class="journal" aria-label="Diario de la aventura">
         <div class="section-title"><h2>CRÓNICA DE LA PROFUNDIDAD</h2><span>LOS ÚLTIMOS ACONTECIMIENTOS</span></div>
         <div id="log" aria-live="off"></div>
       </section>
     </section>
     <aside class="sidebar">
-      <section class="panel party-panel"><div class="section-title"><h2>LA COMPAÑÍA</h2><span>01 / 04</span></div><div id="party" aria-label="Selecciona un héroe con clic o teclas 1 a 4"></div></section>
-      <section class="panel map-panel"><div class="section-title"><h2>AUTOMAPA</h2><button id="toggle-map" class="text-button" type="button">OCULTAR · M</button></div>
+      <section class="panel party-panel"><div class="section-title"><h2>LA COMPAÑÍA</h2><span id="party-selection">01 / 04</span></div><div id="party" aria-label="Selecciona un héroe con clic o teclas 1 a 4"></div></section>
+      <section class="panel mind-panel"><div class="section-title"><h2>LA MIRADA DEL ABISMO</h2><span id="sanity-value">100/100</span></div>
+        <div class="sanity-track" role="meter" aria-label="Cordura del grupo" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span id="sanity-fill" style="width:100%"></span></div>
+        </section><section class="panel map-panel"><div class="section-title"><h2>CARTOGRAFÍA</h2><button id="toggle-map" class="text-button" type="button">OCULTAR · M</button></div>
         <canvas id="map" width="220" height="220" aria-label="Mapa de las casillas exploradas"></canvas>
         <p class="map-legend">◆ Tú · <span class="legend-enemy">◆</span> Enemigo descubierto · ▪ Pared</p>
       </section>
-      <section class="panel quest-panel"><div class="section-title"><h2>EL JURAMENTO</h2><span>MISIÓN PRINCIPAL</span></div>
+      </aside>
+  </div>
+  <section class="codex" aria-label="Códice de la expedición"><div role="tablist" class="codex-nav" aria-label="Páginas del códice"><button type="button" id="tab-quest" role="tab" tabindex="0" aria-controls="page-quest" aria-selected="true" data-page="quest">Juramento</button><button type="button" id="tab-bag" role="tab" tabindex="-1" aria-controls="page-bag" aria-selected="false" data-page="bag">Inventario</button><button type="button" id="tab-lore" role="tab" tabindex="-1" aria-controls="page-lore" aria-selected="false" data-page="lore">Códice</button><button type="button" id="tab-settings" role="tab" tabindex="-1" aria-controls="page-settings" aria-selected="false" data-page="settings">Ajustes y partida</button></div><div id="page-quest" role="tabpanel" tabindex="0" class="codex-page" aria-labelledby="tab-quest"><section class="panel quest-panel"><div class="section-title"><h2>EL JURAMENTO</h2><span>MISIÓN PRINCIPAL</span></div>
         <div id="quests" class="quest-list"></div><p id="ward-status" class="ward-status" aria-live="polite">Sin protección mágica activa</p><div class="equipment"><span>BESTIARIO · ENEMIGOS PRESENTES</span><div id="bestiary" class="bestiary" aria-live="polite"></div></div>
       </section>
-      <section class="panel cosmic-panel" id="sanity-panel" data-zone="stable"><div class="section-title"><h2>LA MIRADA DEL ABISMO</h2><span id="sanity-value">100/100</span></div>
-        <div class="sanity-track" role="meter" aria-label="Cordura del grupo"><span id="sanity-fill" style="width:100%"></span></div>
-        <p id="knowledge-status" class="system-hint">TESTIMONIOS 0/3 · RITO PENDIENTE</p>
+      <section class="panel ending-panel" aria-label="Destino del Nombre Anterior">
+        <div class="section-title"><h2>LOS TRES DESTINOS</h2><span>ECOS DEL UMBRAL</span></div>
+        <p class="cosmic-help">Tus decisiones en la Cripta y la Biblioteca determinarán cómo termina la expedición. Descifra ambos manuscritos y conserva Lucidez para descubrir un desenlace secreto.</p>
+        <p id="ending-omens" class="system-hint" aria-live="polite">El destino todavía no está escrito.</p>
+        <div id="ending-reveal" class="cosmic-ending" hidden aria-live="polite"><h3 id="ending-title"></h3><p id="ending-text"></p></div>
+      </section>
+      </div><div id="page-bag" role="tabpanel" tabindex="0" class="codex-page" aria-labelledby="tab-bag" hidden=""><section class="panel supplies-panel"><div class="section-title"><h2>PERTRECHOS</h2><span>RECURSOS</span></div><div id="inventory" class="supplies"></div><div class="equipment"><span>MOCHILA · CONSUMIBLES</span><div id="bag" class="gear-list"></div></div>
+        <div class="equipment"><span>EQUIPO ACTUAL</span><p id="equipment"></p><div id="gear" class="gear-list" aria-label="Objetos equipables"></div></div>
+      </section>
+      </div><div id="page-lore" role="tabpanel" tabindex="0" class="codex-page" aria-labelledby="tab-lore" hidden=""><section class="panel cosmic-panel" id="sanity-panel" data-zone="stable"><div class="section-title"><h2>TESTIMONIOS DE PIEDRA</h2></div><p id="knowledge-status" class="system-hint">TESTIMONIOS 0/3 · RITO PENDIENTE</p>
         <p class="cosmic-help">Pulsa <kbd>I</kbd> en una inscripción (o delante de ella). Descubre los testimonios de (5,1) y (3,11) y realiza el rito con <kbd>O</kbd> en (3,11).</p>
         <ol id="cosmic-journal" class="secret-journal" aria-label="Diario de testimonios"></ol>
       </section>
@@ -87,21 +95,13 @@
         <ol id="tomes-journal" aria-label="Tomos leídos"></ol>
         <div class="revelation-actions"><button type="button" data-action="readTome">LEER TOMO · K</button><button type="button" data-action="focusMind">RECUPERAR CORDURA · L</button></div>
       </section>
-      <section class="panel ending-panel" aria-label="Destino del Nombre Anterior">
-        <div class="section-title"><h2>LOS TRES DESTINOS</h2><span>ECOS DEL UMBRAL</span></div>
-        <p class="cosmic-help">Tus decisiones en la Cripta y la Biblioteca determinarán cómo termina la expedición. Descifra ambos manuscritos y conserva Lucidez para descubrir un desenlace secreto.</p>
-        <p id="ending-omens" class="system-hint" aria-live="polite">El destino todavía no está escrito.</p>
-        <div id="ending-reveal" class="cosmic-ending" hidden aria-live="polite"><h3 id="ending-title"></h3><p id="ending-text"></p></div>
-      </section>
       <section class="panel drowned-panel"><p class="cosmic-help"><strong>AMENAZAS ABISALES:</strong> los Ahogados, las Larvas de Marea y el Bibliotecario pueden erosionar tu cordura al atacar. Sellar la marea reduce su efecto; escucharla permite obtener Lucidez.</p><div class="section-title"><h2>BIBLIOTECA SUMERGIDA</h2><span id="drowned-status">MANUSCRITOS 0/2 · RITUAL PENDIENTE</span></div>
         <p class="cosmic-help">En la profundidad II investiga los manuscritos en (5,1) y (7,5) desde su casilla o la adyacente. Ante el altar (3,11), elige una sola respuesta a la marea.</p>
         <ol id="drowned-journal" aria-label="Manuscritos sumergidos"></ol>
         <div class="revelation-actions"><button type="button" data-action="investigateDrowned">DESCIFRAR · U</button><button type="button" data-action="drownedSeal">SELLAR MAREA · Y</button><button type="button" data-action="drownedListen">ESCUCHAR MAREA · P</button></div>
       </section>
-      <section class="panel supplies-panel"><div class="section-title"><h2>PERTRECHOS</h2><span>RECURSOS</span></div><div id="inventory" class="supplies"></div><div class="equipment"><span>MOCHILA · CONSUMIBLES</span><div id="bag" class="gear-list"></div></div>
-        <div class="equipment"><span>EQUIPO ACTUAL</span><p id="equipment"></p><div id="gear" class="gear-list" aria-label="Objetos equipables"></div></div>
-      </section>
       <section class="panel secrets-panel"><div class="section-title"><h2>SECRETOS DE PIEDRA</h2><span>EXPLORACIÓN OPCIONAL</span></div><p id="secrets-status" class="system-hint"></p><ol id="secrets-journal" class="secret-journal"></ol></section>
+      </div><div id="page-settings" role="tabpanel" tabindex="0" class="codex-page" aria-labelledby="tab-settings" hidden=""><div class="graphics-chooser"><a href="art-lab.html" style="color:#d9bb86;margin-right:10px" target="_blank" rel="noopener">LABORATORIO VISUAL 3D</a><label for="graphics-mode">MOTOR GRÁFICO</label><select id="graphics-mode" aria-label="Motor gráfico"><option value="auto">AUTO · WEBGL 3D</option><option value="webgl">WEBGL 3D</option><option value="canvas">CLÁSICO · CANVAS 2.5D</option></select><span id="graphics-status" role="status">Cargando motor…</span></div>
       <section class="panel system-panel"><div class="section-title"><h2>EL DESTINO</h2><span>PARTIDA LOCAL</span></div>
         <div class="system-buttons"><button id="save" type="button">GUARDAR</button><button id="load" type="button">CARGAR</button><button id="reset" type="button">NUEVA PARTIDA</button><button id="export-save" type="button">EXPORTAR JSON</button><button id="import-save" type="button">IMPORTAR JSON</button></div><input id="import-save-file" type="file" accept=".json,application/json" hidden aria-label="Selecciona una partida JSON">
         <div class="audio-console" aria-label="Mezclador de sonido de DUNGEON 404">
@@ -118,16 +118,13 @@
         </div>
         <p class="system-hint">Guarda en este navegador o exporta un JSON para pasar tu partida a otro equipo. No se envían archivos a ningún servidor.</p>
       </section>
-    </aside>
-  </div>
-  <footer><div><strong>DUNGEON 404</strong> · Juego original de exploración en primera persona · v5.4 RC8</div><div>HECHO PARA JUGAR SIN CONEXIÓN · WINDOWS · LINUX · NAVEGADOR</div></footer>
-</main>
-<script src="engine.js?v=38" defer></script>
-<script src="renderer.js?v=25" defer></script>
-<script src="renderer3d.js?v=50" defer></script>
+    </div></section><footer>DUNGEON 404 · LA CATEDRAL DE LA MAREA · v6.0 · I. ROIG</footer></main>
+<script src="engine.js?v=60" defer></script>
+<script src="renderer.js?v=60" defer></script>
+<script src="renderer3d.js?v=60" defer></script>
 <script src="audio.js?v=25" defer></script>
-<script src="glb-model.js?v=50" defer></script>
-<script src="game.js?v=50" defer></script>
-<script src="presentation.js?v=50" defer></script>
+<script src="glb-model.js?v=60" defer></script>
+<script src="interface.js?v=60" defer></script><script src="game.js?v=60" defer></script>
+<script src="presentation.js?v=60" defer></script>
 </body>
 </html>

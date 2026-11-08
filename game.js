@@ -9,7 +9,7 @@ let renderMode='auto';
 function createCanvas(){
  const previous=$('view');
  const next=document.createElement('canvas');
- next.id='view';next.width=960;next.height=600;
+ next.id='view';next.width=960;next.height=540;
  next.setAttribute('aria-label','Vista de mazmorra en primera persona');
  previous.replaceWith(next);
  return next;
@@ -56,6 +56,7 @@ let lastThreatMode="explore";
 let effect='';
 let effectUntil=0;
 let lastFrame=0;
+const performanceStats={samples:0,totalMs:0,maxMs:0,firstAt:0,lastAt:0};
 const ICONS={Guerrero:'⚔',Pícara:'⟡',Maga:'✧',Clérigo:'✥'};
 function element(tag,className='',content=''){
   const el=document.createElement(tag);
@@ -98,6 +99,10 @@ function refreshAudioControls(){
  $('audio-status').textContent=active?soundtrack.getStatus()+' · Profundidad '+state.floor:'Pulsa activar para comenzar. Música dinámica, paisajes sonoros y 20 efectos.';
 }
 function play(action){
+  if(['drownedSeal','drownedListen'].includes(action)&&state.floor===2&&state.drownedRitual==='none'&&state.x===3&&state.y===11){
+    const choice=action==='drownedSeal'?'Sellar la Marea recupera 15 de cordura, entrega una poción, reduce el daño mental y favorece el Pacto si sellaste la Cripta.':'Escuchar la Marea cuesta 12 de cordura, otorga 3 de Lucidez y abre la posibilidad del Sueño Invertido; los ataques mentales conservan su fuerza.';
+    if(!window.confirm(choice+' La decisión es permanente en esta partida. ¿Continuar?'))return;
+  }
   const events=core.dispatch(state,action);
   const important=[...events].reverse().find(e=>['hurt','attack','spell','heal','loot','victory','defeat','level','frost','ward'].includes(e.effect));
   if(important){effect=important.effect;effectUntil=performance.now()+220;}
@@ -109,10 +114,11 @@ function play(action){
 }
 function heroNode(hero,index){
   const b=element('button',`hero${index===state.selected?' selected':''}${hero.hp<=0?' dead':''}`);
-  b.type='button';b.setAttribute('aria-pressed',String(index===state.selected));
+  b.dataset.hero=String(index);b.type='button';b.setAttribute('aria-pressed',String(index===state.selected));
   b.title=`${hero.weapon} · ${hero.armor} · Experiencia: ${hero.xp}/${hero.level*35}`;
   const classes={Guerrero:'fighter',Pícara:'rogue',Maga:'mage',Clérigo:'cleric'};
-  const portrait=element('span',`portrait ${classes[hero.role]||''}`,ICONS[hero.role]||'◇');
+  const portrait=element('span',`portrait ${classes[hero.role]||''}`);
+  const drawing=document.createElement('img');drawing.src='assets/art/'+(classes[hero.role]||'fighter')+'.svg';drawing.alt='';portrait.append(drawing);
   portrait.setAttribute('aria-hidden','true');
   const info=element('span','hero-info');
   const name=element('strong','',`${index+1}. ${hero.name}`);
@@ -126,6 +132,7 @@ function heroNode(hero,index){
   return b;
 }
 function renderUI(){
+  const focusedHero=document.activeElement?.dataset.hero;
   const dirs=['NORTE','ESTE','SUR','OESTE'];
   $('location').textContent=`PROFUNDIDAD ${['','I','II','III','IV'][state.floor]} · ${dirs[state.dir]} · TURNO ${state.turn}`;
   $('secrets-status').textContent=`SECRETOS DESCUBIERTOS: ${state.secretsFound.length}/8 · Pulsa E frente a paredes sospechosas.`;
@@ -150,6 +157,17 @@ function renderUI(){
   if(ending){$('ending-title').textContent=ending.title;$('ending-text').textContent=ending.text;}
   $('ending-omens').textContent=state.won?'El destino se ha cumplido.':state.drownedRitual==='seal'?'Has sellado la Marea. El juramento de la Cripta también importa.':state.drownedRitual==='listen'?'Has escuchado la Marea. El conocimiento y la Lucidez abrirán o cerrarán una ruta secreta.':'La Marea todavía espera una decisión.';
   $('party').replaceChildren(...state.party.map(heroNode));
+  if(focusedHero!==undefined)$('party').querySelector('[data-hero="'+focusedHero+'"]').focus({preventScroll:true});
+  $('party-selection').textContent=String(state.selected+1).padStart(2,'0')+' / 04';
+  const meter=document.querySelector('[role="meter"]');meter.setAttribute('aria-valuenow',String(sanity));
+  const spec=core.SPECIALTIES[state.party[state.selected].role];
+  const wait=Math.max(0,(state.party[state.selected].skillReadyAt||0)-state.turn);
+  $('signature-action').textContent=spec.name+(wait?' · '+wait+' T':' · ENTER');
+  $('ability-hint').textContent=state.party[state.selected].name+' · '+spec.detail;
+  const threats=core.threats(state);const intent=$('encounter-intent');
+  intent.dataset.danger=String(threats.some(t=>t.danger));
+  intent.textContent=threats.length?threats.map(t=>t.name+' · '+t.hp+'/'+t.max+' PV · '+(t.phase===2?'FASE II · ':'')+t.text).join(' | '):'Sin amenaza en línea de visión. Explora, busca relieves y lee las inscripciones.';
+
   $('log').replaceChildren(...state.messages.slice(0,12).map(t=>element('div','',t)));
   const goals=state.floor===1?[
     [state.key,'Encuentra la llave de obsidiana'],
@@ -204,6 +222,9 @@ function renderUI(){
   }
   $('gear').append(unequipRow);
   document.querySelectorAll('[data-action]').forEach(b=>{b.disabled=state.dead||state.won;});
+  $('signature-action').disabled=state.dead||state.won||p.hp<=0||wait>0;
+  if(state.won){document.getElementById('tab-quest').click();}
+
 }
 function save(){
   try{localStorage.setItem(core.SAVE_KEY,JSON.stringify(state));note('Partida guardada en este navegador.');}
@@ -276,9 +297,10 @@ $('ambience-volume').addEventListener('input',e=>{soundtrack?.setAmbienceVolume(
 document.querySelectorAll('[data-action]').forEach(button=>button.addEventListener('click',()=>play(button.dataset.action)));
 document.addEventListener('keydown',e=>{
   if(e.ctrlKey||e.metaKey||e.altKey||e.repeat)return;
-  if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;
+  if(document.querySelector('dialog[open]')||['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;
+  if(document.activeElement?.matches('button,summary,[role=tab]')&&[' ','Enter','ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;
   const key=e.key.toLowerCase();
-  const lookup={w:'forward',arrowup:'forward',s:'back',arrowdown:'back',a:'left',arrowleft:'left',d:'right',arrowright:'right',q:'strafeLeft',r:'strafeRight',e:'interact',' ':'attack',h:'potion',g:'guard',f:'spell',b:'ward',c:'frost',v:'pulse',t:'rest',j:'ether',n:'scroll',x:'disarm',z:'search',i:'investigate',o:'ritual',k:'readTome',l:'focusMind',u:'investigateDrowned',y:'drownedSeal',p:'drownedListen'};
+  const lookup={enter:'signature',w:'forward',arrowup:'forward',s:'back',arrowdown:'back',a:'left',arrowleft:'left',d:'right',arrowright:'right',q:'strafeLeft',r:'strafeRight',e:'interact',' ':'attack',h:'potion',g:'guard',f:'spell',b:'ward',c:'frost',v:'pulse',t:'rest',j:'ether',n:'scroll',x:'disarm',z:'search',i:'investigate',o:'ritual',k:'readTome',l:'focusMind',u:'investigateDrowned',y:'drownedSeal',p:'drownedListen'};
   if(lookup[key]){e.preventDefault();play(lookup[key]);}
   else if(key==='m'){$('toggle-map').click();}
   else if(['1','2','3','4'].includes(key)){state.selected=Number(key)-1;renderUI();}
@@ -288,11 +310,12 @@ function frame(t){
   if(!document.hidden && t-lastFrame>(window.DungeonPresentation?.frameInterval||33)){
     lastFrame=t;
     if(t>=effectUntil)effect='';
-    safeWorld(state,t,effect);
+    const began=performance.now();safeWorld(state,t,effect);
+    const elapsed=performance.now()-began;performanceStats.samples++;performanceStats.totalMs+=elapsed;performanceStats.maxMs=Math.max(performanceStats.maxMs,elapsed);if(!performanceStats.firstAt)performanceStats.firstAt=t;performanceStats.lastAt=t;
   }
   requestAnimationFrame(frame);
 }
 // Read-only diagnostics for optional browser QA; actions use the same real public game rules.
-window.Dungeon404=Object.freeze({version:core.VERSION,snapshot:()=>JSON.parse(JSON.stringify(state)),play,audio:()=>({enabled:soundtrack.settings.enabled,music:soundtrack.settings.music,effects:soundtrack.settings.effects,tracks:soundtrack.tracks,effectCount:soundtrack.effectCount,status:soundtrack.getStatus(),mode:soundtrack.getMode(),ambience:soundtrack.settings.ambience})});
+window.Dungeon404=Object.freeze({version:core.VERSION,performance:()=>({...performanceStats,backend:renderer.backend||'Canvas 2.5D'}),snapshot:()=>JSON.parse(JSON.stringify(state)),play,audio:()=>({enabled:soundtrack.settings.enabled,music:soundtrack.settings.music,effects:soundtrack.settings.effects,tracks:soundtrack.tracks,effectCount:soundtrack.effectCount,status:soundtrack.getStatus(),mode:soundtrack.getMode(),ambience:soundtrack.settings.ambience})});
 updateAudioFloor();renderUI();refreshAudioControls();renderer.renderMap(state,showMap);requestAnimationFrame(frame);
 })();
