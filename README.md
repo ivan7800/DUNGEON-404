@@ -1,10 +1,10 @@
-# DUNGEON 404 — La Catedral de la Marea · v6.2
+# DUNGEON 404 — La Catedral de la Marea · v6.4
 
-Dungeon crawler por casillas y acciones: cuatro aventureros descienden por catedrales enterradas bajo un océano cósmico. La campaña conserva sus cuatro profundidades, investigación, rituales, equipo, cordura, ocho secretos y tres finales.
+Dungeon crawler por casillas y acciones: cuatro aventureros descienden por catedrales enterradas bajo un océano cósmico. La campaña conserva sus cuatro profundidades, investigación, rituales, equipo, cordura y ocho secretos; ahora ofrece cuatro desenlaces y reliquias de eco de un solo uso.
 
 La campaña continúa la progresión y los sistemas de las versiones v4.2 y v4.3.
 
-La versión v6.0 está publicada. Esta propuesta prepara v6.2; consulta [RELEASE-REPORT.md](RELEASE-REPORT.md) para el alcance y los límites verificados.
+Esta entrega añade reliquias y un cuarto desenlace a la campaña. Consulta [RELEASE-REPORT.md](RELEASE-REPORT.md) para el alcance y las comprobaciones realizadas y pendientes.
 
 ## Iniciar
 
@@ -43,9 +43,15 @@ La barra bajo la escena muestra enemigos en línea de visión, vida, fase y ataq
 
 Al llegar al nivel 2, cada aventurero elige una vez en Inventario: Bastión (+6 PV máximos y +1 defensa) o Filo (+2 daño y un refuerzo adicional a su especialidad: bloqueo para Aldric, corte para Mara, escarcha para Ilyra, Santuario para Borin). Elegir no consume turno. Los guardados anteriores conservan el esquema 16 y pueden elegir cuando cumplan el requisito.
 
-## Jefes y combate v6.2
+## Patrones de jefes y combate
 
 Las fases II conservan señales legibles y ahora usan avisos propios por jefe. El Primer Nombre alcanza dos casillas despejadas en fase II; la barra de amenaza anticipa ese alcance y no muestra ataques tras los muros. En WebGL, un sigilo dinámico distingue fase activa y golpe preparado. Las señales de impacto duran más para que se perciban al jugar.
+
+## Ecos, reliquias y desenlaces v6.4
+
+Cuatro cámaras secundarias, una por profundidad, ofrecen una elección única: conservar el recuerdo (recuperas algo de cordura o lucidez) o tomar una reliquia de un uso. La Linterna recupera 15 de cordura; el Espejo protege durante la siguiente fase enemiga; la Brújula recupera 2 de lucidez; la Campana interrumpe enemigos visibles hasta a dos casillas. La Campana no se consume si no encuentra un objetivo. La elección de eco no cuesta turno; el Espejo y la Campana sí desencadenan la respuesta enemiga.
+
+Conservar los cuatro ecos y llegar al final con al menos 4 de Lucidez abre «La Catedral recuerda». Si se cumplen simultáneamente las condiciones de otro desenlace, la ruta de los cuatro recuerdos prevalece; con menos de cuatro recuerdos, se aplican las rutas de ritual existentes. Todo se persiste en el esquema 16 con campos opcionales; los guardados antiguos se migran sin reiniciarse.
 
 ## Altares de entrada (v6.1)
 
