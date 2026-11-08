@@ -29,7 +29,7 @@ jobs:
             node "$test"
           done
   browser-audit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -37,11 +37,16 @@ jobs:
           node-version: '22'
       - name: Install browser test tools
         run: |
+          mkdir -p "$RUNNER_TEMP/dungeon404-qa"
+          cd "$RUNNER_TEMP/dungeon404-qa"
+          npm init --yes >/dev/null
           npm install --no-save --package-lock=false playwright@1.56.1
-          npx playwright install --with-deps chromium
+          test -x /usr/bin/google-chrome
       - name: Exercise real HTTP, controls and portable saves
         env:
           D404_EVIDENCE_DIR: ${{ runner.temp }}/dungeon404-evidence
+          NODE_PATH: ${{ runner.temp }}/dungeon404-qa/node_modules
+          D404_CHROMIUM_PATH: /usr/bin/google-chrome
         run: node tests/browser-audit.cjs
       - name: Preserve browser evidence
         if: always()

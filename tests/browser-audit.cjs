@@ -22,7 +22,8 @@ const server=http.createServer((req,res)=>{
  let browser;
  const report={routes:prefix,errors:[],failedRequests:[],scenarios:[],buttons:[],downloads:false,import:false,canvas:false,webgl:false};
  try{
-  browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--enable-unsafe-swiftshader','--use-angle=swiftshader']});
+  browser=await chromium.launch({headless:true,...(process.env.D404_CHROMIUM_PATH?{executablePath:process.env.D404_CHROMIUM_PATH}:{}),args:['--no-sandbox','--disable-dev-shm-usage','--enable-unsafe-swiftshader','--use-angle=swiftshader']});
+  report.browser=browser.version();
   const context=await browser.newContext({viewport:{width:1440,height:1100},acceptDownloads:true});
   const page=await context.newPage();
   page.on('pageerror',error=>report.errors.push(String(error)));
