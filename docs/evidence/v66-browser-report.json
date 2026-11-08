@@ -1,0 +1,61 @@
+{
+  "routes": "/DUNGEON-404/",
+  "errors": [],
+  "failedRequests": [],
+  "scenarios": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "webglFloors": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "buttons": [
+    "left",
+    "strafeLeft",
+    "forward",
+    "back",
+    "strafeRight",
+    "right",
+    "attack",
+    "guard",
+    "signature",
+    "interact",
+    "spell",
+    "ward",
+    "frost",
+    "pulse",
+    "search",
+    "investigate",
+    "ritual",
+    "potion",
+    "ether",
+    "rest",
+    "scroll",
+    "disarm",
+    "readTome",
+    "focusMind",
+    "investigateDrowned",
+    "drownedSeal",
+    "drownedListen"
+  ],
+  "console": [],
+  "downloads": true,
+  "import": true,
+  "canvas": true,
+  "webgl": true,
+  "browser": "156.0.8078.79",
+  "initialGraphics": "WebGL 3D — La Catedral de la Marea · shaders enlazados",
+  "fullscreen": true,
+  "performance": {
+    "backend": "Canvas 2.5D · relieves de la Catedral",
+    "samples": 28,
+    "meanDrawMs": 0.9821428571433769,
+    "observedDrawHz": 9.333333333333334,
+    "note": "Chromium headless, software environment; CPU draw time, not physical GPU FPS."
+  }
+}

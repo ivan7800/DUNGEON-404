@@ -4,6 +4,8 @@
 - Progreso de las cuatro profundidades y accesos directos a sonido, guardado, recursos y ajustes. Oportunidades cercanas con costes de lectura y enlaces a las decisiones de altar/eco.
 - Corrige pistas musicales residuales al interrumpir fundidos y limita a ocho los efectos simultáneos. Los cambios de volumen afectan a las voces activas. La música de peligro respeta la línea de visión.
 - Rechaza guardados mal formados sin excepciones; admite correctamente las trampas desactivadas de profundidad IV. Conserva esquema/clave 16 y migraciones.
+- Corrige un error WebGL real: las luces enviaban 25 valores a un uniforme de 15, provocando `INVALID_VALUE` y la recuperación a Canvas. Ahora se envían solo las coordenadas xyz.
+- Selector móvil de cuatro héroes junto a las acciones; salida de pantalla completa dentro de la escena; modo económico con resolución interna 480 × 270, frente a 960 × 540 en modo suave.
 - Libera programas y buffers al cambiar motor; recuperación segura tras pérdida/restauración del contexto. El laboratorio crea un lienzo limpio para Canvas y su captura PNG redibuja el frame.
 - Corrige referencias antiguas a tres profundidades/destinos; reinicia avisos de jefe al cargar o iniciar otra partida.
 - Cuatro pruebas de regresión nuevas, auditoría Chromium por HTTP y job de Actions con capturas. Consulta el informe para resultados reales y pendientes.

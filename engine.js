@@ -913,11 +913,11 @@
   function validGame(s){
     // Imported JSON is untrusted. Check containers before reading nested fields.
     if(!s||typeof s!=='object'||Array.isArray(s))return false;
-    if(!Array.isArray(s.party)||s.party.length!==4||s.party.some(p=>!p||typeof p!=='object'||!Object.hasOwn(SPECIALTIES,p.role)))return false;
+    if(!Array.isArray(s.party)||s.party.length!==4||s.party.some(p=>!p||typeof p!=='object'||typeof p.role!=='string'||!Object.hasOwn(SPECIALTIES,p.role)))return false;
     if(!Array.isArray(s.monsters)||s.monsters.some(m=>!m||typeof m!=='object'))return false;
     if(!Array.isArray(s.loreRead)||s.loreRead.length>100||s.loreRead.some(v=>typeof v!=='string'||v.length>100))return false;
     if(!Array.isArray(s.trapsTriggered)||s.trapsTriggered.length>12||s.trapsTriggered.some(v=>typeof v!=='string'||!/^([1-4]):\d+,\d+$/.test(v)))return false;
-    if(s.ending!==undefined && s.ending!==null && (!Object.hasOwn(ENDINGS,s.ending)||!s.won))return false;
+    if(s.ending!==undefined && s.ending!==null && (typeof s.ending!=='string'||!Object.hasOwn(ENDINGS,s.ending)||!s.won))return false;
     if(s.drownedRitual!==undefined&&!['none','seal','listen'].includes(s.drownedRitual))return false;
     if(s.drownedClues!==undefined&&(!Array.isArray(s.drownedClues)||s.drownedClues.length>2||new Set(s.drownedClues).size!==s.drownedClues.length||s.drownedClues.some(id=>!['tide','bell'].includes(id))))return false;
     if(s.lucidity!==undefined && (!Number.isInteger(s.lucidity)||s.lucidity<0||s.lucidity>10))return false;
@@ -927,18 +927,18 @@
     if(s.witnessed!==undefined && (!Array.isArray(s.witnessed)||s.witnessed.length>3||new Set(s.witnessed).size!==s.witnessed.length||s.witnessed.some(k=>!['lurker','crawler','warden'].includes(k))))return false;
     if(s.ritualSealed!==undefined && typeof s.ritualSealed!=='boolean')return false;
     if(s.shrines!==undefined&&(!Array.isArray(s.shrines)||s.shrines.length>4||new Set(s.shrines).size!==s.shrines.length||s.shrines.some(v=>![1,2,3,4].includes(v))))return false;
-    if(s.echoes!==undefined&&(!Array.isArray(s.echoes)||s.echoes.length>4||new Set(s.echoes).size!==s.echoes.length||s.echoes.some(v=>!Object.hasOwn(ECHO_SITES,v))))return false;
+    if(s.echoes!==undefined&&(!Array.isArray(s.echoes)||s.echoes.length>4||new Set(s.echoes).size!==s.echoes.length||s.echoes.some(v=>typeof v!=='string'||!Object.hasOwn(ECHO_SITES,v))))return false;
     if(s.echoChoices!==undefined&&(!Array.isArray(s.echoChoices)||s.echoChoices.length>4||new Set(s.echoChoices).size!==s.echoChoices.length||s.echoChoices.some(v=>!Object.keys(ECHO_SITES).some(id=>v===id+':memory'||v===id+':material'))||new Set(s.echoChoices.map(v=>v.slice(0,v.lastIndexOf(':')))).size!==s.echoChoices.length||s.echoChoices.some(v=>!s.echoes?.includes(v.slice(0,v.lastIndexOf(':'))))))return false;
-    if(s.relics!==undefined&&(!Array.isArray(s.relics)||s.relics.length>4||new Set(s.relics).size!==s.relics.length||s.relics.some(v=>!Object.hasOwn(RELICS,v)||!s.echoChoices?.includes(Object.keys(ECHO_SITES).find(id=>ECHO_SITES[id].relic===v)+':material'))))return false;
+    if(s.relics!==undefined&&(!Array.isArray(s.relics)||s.relics.length>4||new Set(s.relics).size!==s.relics.length||s.relics.some(v=>typeof v!=='string'||!Object.hasOwn(RELICS,v)||!s.echoChoices?.includes(Object.keys(ECHO_SITES).find(id=>ECHO_SITES[id].relic===v)+':material'))))return false;
     const coord=(p,floor)=>Number.isInteger(p.x)&&Number.isInteger(p.y)&&passable(p.x,p.y,floor||1);
     const natural=(v,max=100000)=>Number.isInteger(v)&&v>=0&&v<=max;
     return !!s&&typeof s==='object'&&coord(s,s.floor)&&natural(s.dir,3)&&natural(s.selected,3)&&
       natural(s.turn)&&natural(s.potions,1000)&&natural(s.ether,1000)&&natural(s.scrolls,1000)&&
       typeof s.key==='boolean'&&typeof s.sigil==='boolean'&&[1,2,3,4].includes(s.floor)&&
-      Array.isArray(s.secretsFound)&&s.secretsFound.length<=8&&s.secretsFound.every(k=>Object.hasOwn(SECRETS,k))&&new Set(s.secretsFound).size===s.secretsFound.length&&
-      Array.isArray(s.gear)&&s.gear.length<=6&&s.gear.every(k=>Object.hasOwn(GEAR,k))&&
+      Array.isArray(s.secretsFound)&&s.secretsFound.length<=8&&s.secretsFound.every(k=>typeof k==='string'&&Object.hasOwn(SECRETS,k))&&new Set(s.secretsFound).size===s.secretsFound.length&&
+      Array.isArray(s.gear)&&s.gear.length<=6&&s.gear.every(k=>typeof k==='string'&&Object.hasOwn(GEAR,k))&&
       new Set(s.gear).size===s.gear.length&&
-      s.party.every(h=>['equippedWeapon','equippedArmor'].every(k=>h[k]===undefined||(Object.hasOwn(GEAR,h[k])&&s.gear.includes(h[k])&&GEAR[h[k]].slot===(k==='equippedWeapon'?'weapon':'armor')&&(!GEAR[h[k]].role||GEAR[h[k]].role===h.role))))&&
+      s.party.every(h=>['equippedWeapon','equippedArmor'].every(k=>h[k]===undefined||(typeof h[k]==='string'&&Object.hasOwn(GEAR,h[k])&&s.gear.includes(h[k])&&GEAR[h[k]].slot===(k==='equippedWeapon'?'weapon':'armor')&&(!GEAR[h[k]].role||GEAR[h[k]].role===h.role))))&&
       ['equippedWeapon','equippedArmor'].every(k=>{const equipped=s.party.map(h=>h[k]).filter(Boolean);return new Set(equipped).size===equipped.length;})&&
       Array.isArray(s.gearFound)&&s.gearFound.length<=6&&
       typeof s.gateOpen==='boolean'&&typeof s.labyrinthGateOpen==='boolean'&&typeof s.voidHeart==='boolean'&&typeof s.finalRune==='boolean'&&Array.isArray(s.disarmedTraps)&&s.disarmedTraps.length<=12&&
@@ -950,9 +950,9 @@
         Number.isFinite(p.hp)&&Number.isFinite(p.max)&&p.max>0&&p.max<10000&&p.hp>=0&&p.hp<=p.max&&
         (p.skillReadyAt===undefined||natural(p.skillReadyAt,100000))&&(p.path===undefined||(['bulwark','edge'].includes(p.path)&&p.level>=2))&&natural(p.level,1000)&&p.level>=1&&natural(p.xp)&&natural(p.mana)&&natural(p.maxMana,10000)&&p.mana<=p.maxMana&&
         Number.isFinite(p.damage)&&Number.isFinite(p.defense))&&
-      Array.isArray(s.monsters)&&s.monsters.length<=28&&s.monsters.every(m=>m&&coord(m,m.floor)&&
+      Array.isArray(s.monsters)&&s.monsters.length<=28&&s.monsters.every(m=>m&&coord(m,m.floor)&&[1,2,3,4].includes(m.floor||1)&&typeof m.kind==='string'&&Object.hasOwn(BESTIARY,m.kind)&&
         (m.telegraph===undefined||typeof m.telegraph==='boolean')&&(m.phaseAwakened===undefined||typeof m.phaseAwakened==='boolean')&&
-        (m.cosmicType===undefined||((m.floor||1)===2&&Object.hasOwn(COSMIC_ENEMIES,m.cosmicType)))&&
+        (m.cosmicType===undefined||((m.floor||1)===2&&typeof m.cosmicType==='string'&&Object.hasOwn(COSMIC_ENEMIES,m.cosmicType)))&&
         (m.mindStrikes===undefined||natural(m.mindStrikes,2))&&
         typeof m.name==='string'&&m.name.length<100&&Number.isFinite(m.hp)&&m.hp>=0&&m.hp<=m.max&&
         (m.staggered===undefined||natural(m.staggered,1))&&(m.frozen===undefined||natural(m.frozen,2))&&Number.isFinite(m.max)&&m.max>0&&m.max<10000&&Number.isFinite(m.damage))&&

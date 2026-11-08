@@ -10,9 +10,10 @@ Cuatro mapas, cuatro custodios con fases, cuatro entidades cósmicas, especialid
 
 1. Los fundidos de audio se cancelaban mediante un token sin detener las pistas abandonadas. Una transición rápida podía dejar varias músicas superpuestas. Ahora cada transición retira sus voces anteriores, conserva ganancias y limita efectos a ocho voces.
 2. `validGame` accedía a estructuras anidadas antes de validarlas; JSON incompleto podía lanzar excepciones. Se validan contenedores y clases antes de leerlos. Se conserva el formato 16; esquemas futuros desconocidos se rechazan. La expresión regular de trampas excluía por error la cuarta profundidad: se corrige y prueba su ciclo de guardado/carga.
-3. El laboratorio intentaba crear Canvas sobre un lienzo que ya podía tener WebGL. Ahora usa uno nuevo. El controlador libera buffers/programas al cambiar motor; tras restauración de contexto no reutiliza recursos GL invalidados.
-4. La música y el aviso de jefe reaccionaban a enemigos tras paredes; se alinean con los pronósticos visibles. Al iniciar/cargar se limpian los avisos de otra sesión. La alerta Canvas de fase deja de aparecer por un jefe oculto.
-5. Las oportunidades narrativas exigían recordar teclas/coordenadas y el sonido estaba relegado al códice. Se añaden señales cercanas con costes y enlaces de decisión, progreso y accesos directos sobre la partida. Se corrigen textos heredados que aún describían tres profundidades/destinos.
+3. Chromium real detectó `WebGL: INVALID_VALUE: uniform3fv: invalid size`: cada luz tenía xyz y dos datos de anclaje y el código enviaba los cinco componentes al shader vec3. El array contenía 25 valores en vez de 15 y el primer dibujo abandonaba WebGL. Se envían solo xyz y una regresión comprueba el tamaño en las cuatro plantas.
+4. El laboratorio intentaba crear Canvas sobre un lienzo que ya podía tener WebGL. Ahora usa uno nuevo. El controlador libera buffers/programas al cambiar motor; tras restauración de contexto no reutiliza recursos GL invalidados.
+5. La música y el aviso de jefe reaccionaban a enemigos tras paredes; se alinean con los pronósticos visibles. Al iniciar/cargar se limpian los avisos de otra sesión. La alerta Canvas de fase deja de aparecer por un jefe oculto.
+6. Las oportunidades narrativas exigían recordar teclas/coordenadas y el sonido estaba relegado al códice. Se añaden señales cercanas con costes y enlaces de decisión, progreso y accesos directos sobre la partida. Se corrigen textos heredados que aún describían tres profundidades/destinos.
 
 ## Arte entregado
 
@@ -22,13 +23,37 @@ Cuatro SVG originales reproducibles con Python, integrados como relieves en pare
 
 - Línea base: 48 scripts JavaScript pasados antes de editar. Tras cambios: 52 scripts, incluidos cuatro de regresión v6.6.
 - Ruta de campaña automática terminada con cinco valores fijos del azar (0,05/0,25/0,49/0,75/0,95): 223–226 acciones del guion, dos o tres supervivientes. Es una comprobación de ruta accesible con una estrategia concreta, no cinco partidas humanas ni una medición de duración.
-- 20 SVG XML válidos; seis GLB decodificados y transformados por las pruebas; 34 OGG decodificables con ffprobe (0,21–36 s por archivo). No equivale a escucha crítica.
+- 20 SVG XML válidos; seis GLB decodificados y transformados por las pruebas; 34 OGG decodificados íntegramente por ffmpeg sin errores y duraciones comprobadas con ffprobe (0,21–36 s por archivo). No equivale a escucha crítica.
 - Sintaxis JavaScript, Python y Bash; rutas relativas y claves de caché 66; IDs, selectores/listeners y ausencia de Service Worker.
 - El navegador automático local no pudo arrancar: el ejecutable Chromium no estaba instalado y su descarga devolvió un archivo no válido. El navegador compartido tampoco puede acceder al servidor local (conexión rechazada). Se añade `tests/browser-audit.cjs` y un job de Actions para revisar el HTTP real en un perfil aislado.
 
-## Verificación de publicación
+## Navegador real y evidencia
 
-Pendiente de ejecutar la auditoría Chromium en Actions y revisar la web publicada. Los resultados reales se incorporarán antes de cerrar esta entrega. No se afirma todavía una nueva revisión visual de v6.6 ni una medición de GPU física.
+Auditoría completa pasada en [GitHub Actions, ejecución 42512868992](https://github.com/ivan7800/DUNGEON-404/actions/runs/42512868992), sobre el código de interfaz/render de `3a4073c68b08f7e9ea173a53511f5079d60dbcef`. Chrome 156.0.8078.79 sobre Ubuntu 24.04, con ANGLE/SwiftShader. La revisión posterior de validación de tipos de guardado se cubre adicionalmente con la suite Node; no altera estos escenarios.
+
+- Carga HTTP real bajo `/DUNGEON-404/`: sin peticiones fallidas, errores de página ni avisos de consola en la ejecución final.
+- WebGL real: contexto, shaders y dibujo de las cuatro profundidades; capturas inspeccionadas de las cuatro. No es un mock ni una prueba en GPU física.
+- Canvas: las cuatro plantas, menús y combate con un Confesor en fase II. El Corte del silencio cancela el ataque preparado. Se conserva el fallback, probado también por simulación de errores/pérdida de contexto.
+- Se pulsaron las 27 acciones estáticas, pestañas, mapa, audio, ajustes, selección de motor, guardar/cargar y reinicio (aceptación/cancelación). Algunas acciones responden con sus requisitos al no existir objetivo/recurso/ubicación; su efecto válido está cubierto por las pruebas de reglas.
+- Exportación JSON descargada, parseada e importada en un perfil aislado. Un JSON corrupto se rechaza y conserva la sesión. No se escribió en el navegador del jugador.
+- Entrada y salida de pantalla completa confirmadas. La salida tiene un botón propio dentro de la escena.
+- Anchuras 390 y 320 px sin desbordamiento horizontal; selección táctil de Ilyra comprobada. El grupo compacto queda junto a las acciones. Es emulación de viewport, no teléfono físico.
+- Laboratorio: cuatro plantas, ocho selecciones de criatura, movimiento, ataque, animación, galería, carga GLB y descarga PNG.
+- Modo económico: 480 × 270 internos y dibujo limitado; suave: 960 × 540. Cambiar calidad conserva el turno.
+
+Evidencia conservada en el repositorio: [cuatro vistas WebGL](docs/evidence/v66-webgl-depths.jpg), [vista móvil](docs/evidence/v66-mobile.jpg) e [informe JSON](docs/evidence/v66-browser-report.json). Los artefactos completos de Actions incluyen capturas Canvas, WebGL, móvil, laboratorio y el JSON de la prueba aislada.
+
+## Rendimiento y límites
+
+En Canvas económico (480 × 270), el escenario de jefe produjo 28 muestras durante la ventana de tres segundos: 0,98 ms CPU de dibujo de media y 9,33 dibujos/s observados en ese servidor. Esta frecuencia incluye planificación y limitaciones del navegador de CI; no equivale a FPS de GPU ni se compara como mejora porcentual con capturas previas en otras resoluciones. No hay medición en un PC físico del usuario.
+
+La primera instalación de navegador falló por usar Playwright antiguo con Ubuntu 26.04; el job se fijó a Ubuntu 24.04 y al Chrome instalado. Las ejecuciones siguientes identificaron el error real de luces, límites de tiempo de captura y coste del renderizado por software; se corrigieron y se repitió la auditoría. Los intentos fallidos quedan en el historial de Actions.
+
+La campaña dispone de inicio, progreso y cuatro finales; no se ha completado una partida humana de principio a fin ni una escucha crítica completa. Tampoco se certifican GPU física, latencia táctil en iOS/Android o los lanzadores ejecutados en un escritorio Windows/Linux real. No se atribuye una duración de campaña ni una puntuación de diversión a las pruebas automáticas.
+
+## Publicación
+
+La entrega v6.6 se incorpora a `main` desde `codex/v6.6-campaign-audit` por petición expresa del propietario. El cierre comprueba la referencia remota y el despliegue de GitHub Pages; el historial de Actions conserva los resultados del commit publicado.
 
 ---
 

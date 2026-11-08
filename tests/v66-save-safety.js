@@ -15,6 +15,10 @@ for(const key of ['party','monsters','visited','messages','gear','gearFound','di
 for(const change of [s=>s.party[0]=null,s=>s.party[0].role='Unknown',s=>s.monsters[0]=null,s=>s.monsters[0].name=42,s=>s.schema=999]){
  const s=clone();change(s);assert.equal(C.importSave(s),null);
 }
+const hostile={toString:null,valueOf:null};
+for(const change of [s=>s.party[0].role=hostile,s=>{s.won=true;s.ending=hostile},s=>s.gear=[hostile],s=>s.secretsFound=[hostile],s=>s.monsters[0].cosmicType=hostile]){
+ const s=clone();change(s);assert.equal(C.validGame(s),false);assert.equal(C.importSave(s),null);
+}
 const s=clone();s.floor=4;s.x=2;s.y=7;s.dir=1;s.selected=1;s.monsters=[];
 C.dispatch(s,'disarm',()=>.5);
 assert(s.disarmedTraps.includes('4:3,7'));
