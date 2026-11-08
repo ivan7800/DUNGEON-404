@@ -1,0 +1,18 @@
+/* Presentation settings are independent of campaign saves. */
+(()=>{'use strict';
+let saved={};try{saved=JSON.parse(localStorage.getItem('d404-presentation')||'{}')||{}}catch{}
+const settings={film:saved.film!==false,quality:saved.quality==='economy'?'economy':'smooth'};
+window.DungeonPresentation={frameInterval:settings.quality==='economy'?83:33};
+const bar=document.createElement('div');bar.className='release-tools';
+bar.innerHTML='<span class="release-label">FUNCIÓN DE MEDIANOCHE</span><button type="button" id="release-help">CÓMO SOBREVIVIR</button><button type="button" id="release-film">PELÍCULA</button><button type="button" id="release-quality">FLUIDEZ</button><button type="button" id="release-fullscreen">PANTALLA COMPLETA</button>';
+document.querySelector('.graphics-chooser').before(bar);
+const help=document.createElement('dialog');help.className='survival-guide';
+help.innerHTML='<form method="dialog"><p class="kicker">DUNGEON 404 · GUÍA DE SUPERVIVENCIA</p><h2>El abismo escucha cada paso.</h2><p>Cuatro expedicionarios. Cuatro profundidades. Tres destinos. Explora con calma: los enemigos actúan cuando realizas acciones. Los ajustes y esta guía no consumen turnos.</p><ol><li><strong>Muévete:</strong> W / S avanzan y retroceden; A / D giran; Q / R dan un paso lateral. También puedes usar las flechas o los botones.</li><li><strong>Sobrevive:</strong> selecciona personaje con 1–4. Espacio ataca; G defiende; F lanza un conjuro. H usa una poción y J una esencia.</li><li><strong>Investiga:</strong> E interactúa, Z busca y X desactiva trampas. Lee las pistas del diario antes de gastar recursos o realizar ritos.</li><li><strong>Conserva la cordura:</strong> I investiga testimonios; K lee tomos; L convierte Lucidez en cordura. Tus decisiones en la Biblioteca afectan al final.</li><li><strong>Descansa y guarda:</strong> T permite descansar cuando es seguro. GUARDAR conserva la partida en este navegador; EXPORTAR JSON permite trasladarla.</li></ol><p>Si la imagen va lenta, selecciona FLUIDEZ: ECONÓMICA o el motor CLÁSICO. Puedes quitar el acabado de película. Activa el sonido con el botón del mezclador; ajusta música, ambiente y efectos por separado.</p><button class="guide-close">VOLVER AL DESCENSO</button></form>';
+document.body.append(help);
+function update(){document.body.classList.toggle('film-disabled',!settings.film);document.getElementById('release-film').textContent='PELÍCULA: '+(settings.film?'SÍ':'NO');document.getElementById('release-film').setAttribute('aria-pressed',String(settings.film));document.getElementById('release-quality').textContent='FLUIDEZ: '+(settings.quality==='smooth'?'SUAVE':'ECONÓMICA');window.DungeonPresentation.frameInterval=settings.quality==='smooth'?33:83;try{localStorage.setItem('d404-presentation',JSON.stringify(settings))}catch{}}
+document.getElementById('release-help').onclick=()=>help.showModal();
+document.getElementById('release-film').onclick=()=>{settings.film=!settings.film;update()};
+document.getElementById('release-quality').onclick=()=>{settings.quality=settings.quality==='smooth'?'economy':'smooth';update()};
+document.getElementById('release-fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.querySelector('.viewport').requestFullscreen()}catch{document.getElementById('release-fullscreen').textContent='NO DISPONIBLE'}};
+update();
+})();

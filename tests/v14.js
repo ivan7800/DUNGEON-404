@@ -1,0 +1,32 @@
+
+'use strict';
+const assert=require('node:assert/strict');
+const core=require('../engine.js');
+assert.equal(core.VERSION,16);
+assert.equal(Object.keys(core.SECRETS).length,8);
+const s=core.createGame();
+assert(core.validGame(s));
+// From start, looking west at the ancient wall, the first cache must open once.
+s.dir=3;
+let e=core.dispatch(s,'interact',()=>0.5);
+assert(e.some(x=>x.text.includes('RELIQUIA OCULTA')));
+assert.equal(s.potions,5);
+assert.deepEqual(s.secretsFound,['1:0,1']);
+core.dispatch(s,'interact',()=>0.5);
+assert.equal(s.potions,5);
+assert(core.validGame(s));
+const loreCache=core.createGame();loreCache.x=5;loreCache.y=1;loreCache.dir=1;
+const lucidityEvents=core.dispatch(loreCache,'interact',()=>.5);
+assert.equal(loreCache.lucidity,2);assert(lucidityEvents.some(x=>x.text.includes('RELIQUIA OCULTA')));
+const wardCache=core.createGame();wardCache.floor=3;wardCache.x=5;wardCache.y=1;wardCache.dir=1;
+core.dispatch(wardCache,'interact',()=>.5);assert.equal(wardCache.ward,1);
+const old=core.createGame();old.schema=13;delete old.secretsFound;
+const migrated=core.importSave(old);
+assert(migrated&&core.validGame(migrated));
+assert.deepEqual(migrated.secretsFound,[]);
+const round=core.importSave(JSON.parse(JSON.stringify(s)));
+assert(round&&core.validGame(round));
+assert.deepEqual(round.secretsFound,s.secretsFound);
+const bad=JSON.parse(JSON.stringify(s));bad.secretsFound=['1:0,1','1:0,1'];
+assert.equal(core.importSave(bad),null);
+console.log('OK v1.4: 6 secrets, single-use cache, compatibility v1.3, save validation');

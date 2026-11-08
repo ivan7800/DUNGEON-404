@@ -1,0 +1,21 @@
+/* WebGL contract test with deterministic mock, does not claim GPU validation. */
+'use strict';
+const assert=require('node:assert/strict');const fs=require('node:fs');const vm=require('node:vm');
+const core=require('../engine.js');
+const calls=[];let drawCount=0,drawVertices=0;
+const gl={VERTEX_SHADER:1,FRAGMENT_SHADER:2,COMPILE_STATUS:3,LINK_STATUS:4,ARRAY_BUFFER:5,FLOAT:6,DEPTH_TEST:7,CULL_FACE:8,COLOR_BUFFER_BIT:16,DEPTH_BUFFER_BIT:32,DYNAMIC_DRAW:64,TRIANGLES:4};
+const stub=(name)=>(...args)=>{calls.push([name,...args]);return {};};
+for(const name of ['createShader','shaderSource','compileShader','createProgram','attachShader','linkProgram','useProgram','createBuffer','bindBuffer','enableVertexAttribArray','vertexAttribPointer','enable','disable','clearColor','viewport','clear','uniformMatrix4fv','uniform3fv','uniform1f','bufferData'])gl[name]=stub(name);
+gl.getShaderParameter=()=>true;gl.getProgramParameter=()=>true;gl.getAttribLocation=()=>0;gl.getUniformLocation=()=>({});gl.drawArrays=(_mode,_first,count)=>{drawCount++;drawVertices=count;};
+const renderer={createRenderer:()=>({renderMap:()=>{}})};
+const context={DungeonRenderer:renderer,document:{createElement:()=>({width:960,height:600})},console};context.globalThis=context;
+vm.runInNewContext(fs.readFileSync(require.resolve('../renderer3d.js'),'utf8'),context);
+const canvas={width:960,height:600,getContext:(name)=>name==='webgl'?gl:null};
+const instance=context.Dungeon3DRenderer.createRenderer(canvas,{},core);
+assert.match(instance.backend,/WebGL/);instance.renderWorld(core.createGame(),1000);
+assert.equal(drawCount,1);assert(drawVertices>3000,`Expected 3D geometry, got ${drawVertices} vertices`);
+assert(calls.some(x=>x[0]==='clearColor'));
+assert(calls.some(x=>x[0]==='uniform3fv'));
+const dataCall=calls.findLast(x=>x[0]==='bufferData');assert(ArrayBuffer.isView(dataCall[2]));assert.equal(dataCall[2].length,drawVertices*9);
+const fallback=context.Dungeon3DRenderer.createRenderer({getContext:()=>null},{},core);assert.equal(typeof fallback.renderMap,'function');
+console.log(`v1.9 WebGL mock OK: ${drawVertices} vertices, ${drawCount} draw call, Canvas fallback OK`);

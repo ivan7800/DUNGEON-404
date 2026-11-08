@@ -1,0 +1,23 @@
+const assert=require('node:assert/strict');
+const E=require('../engine.js');
+const s=E.createGame();
+assert.equal(E.resolveEnding(s),'silence');
+assert.equal(s.ending,null);
+assert(E.validGame(s));
+s.ritualSealed=true;s.drownedRitual='seal';
+assert.equal(E.resolveEnding(s),'seal');
+s.drownedRitual='listen';s.drownedClues=['tide','bell'];s.lucidity=4;
+assert.equal(E.resolveEnding(s),'revelation');
+s.lucidity=3;assert.equal(E.resolveEnding(s),'silence');
+s.lucidity=4;s.won=true;s.ending='revelation';assert(E.validGame(s));
+const restored=E.importSave(JSON.parse(JSON.stringify(s)));
+assert.equal(restored.ending,'revelation');
+const old=JSON.parse(JSON.stringify(s));delete old.ending;
+assert.equal(E.importSave(old).ending,'silence');
+for(const illegal of ['fake','__proto__',42]){const altered={...s,ending:illegal};assert.equal(E.validGame(altered),false);assert.equal(E.importSave(altered),null);}
+assert.equal(E.validGame({...s,won:false}),false);
+assert.deepEqual(Object.keys(E.ENDINGS).sort(),['revelation','seal','silence']);
+const fs=require('node:fs');
+const page=fs.readFileSync(require('node:path').join(__dirname,'../index.html'),'utf8');
+for(const id of ['ending-reveal','ending-title','ending-text','ending-omens'])assert(page.includes('id="'+id+'"'));
+console.log('v4.0: endings, saved outcomes and user interface OK');

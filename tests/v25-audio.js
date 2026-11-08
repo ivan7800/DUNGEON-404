@@ -1,0 +1,22 @@
+const fs=require('fs'),path=require('path'),assert=require('node:assert/strict'),vm=require('node:vm');
+const root=path.join(__dirname,'..');const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+for(const id of ['sound','music-volume','effects-volume','ambience-volume','soundscape-indicator'])assert(html.includes(`id="${id}"`),id);
+assert(html.includes('audio.js?v=25'));const game=fs.readFileSync(path.join(root,'game.js'),'utf8');assert(game.includes('updateThreat(threat)'));
+let played=0,paused=0;const media=[];
+function Audio(src){this.src=src;this.volume=0;this.loop=false;this.currentTime=0;this.preload='none';this.play=()=>{played++;return Promise.resolve();};this.pause=()=>{paused++;};this.addEventListener=()=>{};this.removeAttribute=()=>{};media.push(this);}
+const memory={};let clock=1000;const callbacks=[];
+const ctx={window:null,Audio,localStorage:{getItem:k=>memory[k]||null,setItem:(k,v)=>memory[k]=v},performance:{now:()=>clock},requestAnimationFrame:cb=>callbacks.push(cb)};ctx.window=ctx;
+vm.runInNewContext(fs.readFileSync(path.join(root,'audio.js'),'utf8'),ctx);const a=ctx.DungeonAudio;
+assert.equal(a.tracks,14);assert.equal(a.effectCount,20);assert.equal(a.getMode(),'explore');
+a.setMusicVolume(.45);a.setEffectsVolume(.36);a.setAmbienceVolume(.24);a.setEnabled(true);
+assert(played>=2);assert(media.some(m=>m.src.includes('floor-1')));assert(media.some(m=>m.src.includes('ambience-1')));
+a.updateThreat('combat');assert.equal(a.getMode(),'combat');assert(media.some(m=>m.src.includes('combat-1')));
+a.updateThreat('boss');assert(media.some(m=>m.src.includes('boss-1')));
+a.updateFloor(4);assert(media.some(m=>m.src.includes('boss-2')));assert(media.some(m=>m.src.includes('ambience-4')));
+a.updateThreat('explore');assert(media.some(m=>m.src.includes('floor-4')));
+a.play('boss-roar');assert(media.some(m=>m.src.includes('boss-roar')));
+a.setEnabled(false);assert(paused>0);assert.equal(a.settings.ambience,.24);
+for(let i=1;i<=4;i++)for(const prefix of ['floor','combat','ambience'])assert(fs.statSync(path.join(root,'assets/audio',`${prefix}-${i}.ogg`)).size>5000);
+for(let i=1;i<=2;i++)assert(fs.statSync(path.join(root,'assets/audio',`boss-${i}.ogg`)).size>5000);
+for(const kind of ['gate','trap','boss-roar','boss-hit','magic-impact','secret'])assert(fs.statSync(path.join(root,'assets/audio',`${kind}.ogg`)).size>2000);
+console.log('v2.5 audio OK: 14 tracks, 20 effects, music states, floor transitions, offline files, mute and independent volumes');
