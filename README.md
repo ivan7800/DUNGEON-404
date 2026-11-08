@@ -51,7 +51,7 @@ Las fases II conservan señales legibles y ahora usan avisos propios por jefe. E
 
 Cuatro cámaras secundarias, una por profundidad, ofrecen una elección única: conservar el recuerdo (recuperas algo de cordura o lucidez) o tomar una reliquia de un uso. La Linterna recupera 15 de cordura; el Espejo protege durante la siguiente fase enemiga; la Brújula recupera 2 de lucidez; la Campana interrumpe enemigos visibles hasta a dos casillas. La Campana no se consume si no encuentra un objetivo. La elección de eco no cuesta turno; el Espejo y la Campana sí desencadenan la respuesta enemiga.
 
-Conservar los cuatro ecos y llegar al final con al menos 4 de Lucidez abre «La Catedral recuerda». Los finales ya existentes mantienen prioridad cuando sus propias condiciones se cumplen. Todo se persiste en el esquema 16 con campos opcionales; los guardados antiguos se migran sin reiniciarse.
+Conservar los cuatro ecos y llegar al final con al menos 4 de Lucidez abre «La Catedral recuerda». Si se cumplen simultáneamente las condiciones de otro desenlace, la ruta de los cuatro recuerdos prevalece; con menos de cuatro recuerdos, se aplican las rutas de ritual existentes. Todo se persiste en el esquema 16 con campos opcionales; los guardados antiguos se migran sin reiniciarse.
 
 ## Altares de entrada (v6.1)
 

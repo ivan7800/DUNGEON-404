@@ -11,8 +11,13 @@ for(const [floor,x,y,relic] of sites){
 const memory=C.createGame();memory.floor=1;memory.x=6;memory.y=5;memory.lucidity=0;C.dispatch(memory,'echo:memory');assert.equal(memory.lucidity,1);assert.equal(memory.echoChoices[0],'1:6,5:memory');
 const old=C.createGame();delete old.echoes;delete old.echoChoices;delete old.relics;const migrated=C.importSave(old);assert.deepEqual(migrated.echoes,[]);assert.deepEqual(migrated.relics,[]);
 const invalid=C.createGame();invalid.echoes=['1:6,5','1:6,5'];assert.equal(C.validGame(invalid),false);
+const legacyEcho=C.createGame();legacyEcho.echoes=['1:6,5'];assert(C.validGame(legacyEcho),'v6.3 echo-only saves remain valid');
+const orphanChoice=C.createGame();orphanChoice.echoChoices=['1:6,5:memory'];assert.equal(C.validGame(orphanChoice),false,'choices must belong to resolved echoes');
+const duplicateSite=C.createGame();duplicateSite.echoes=['1:6,5'];duplicateSite.echoChoices=['1:6,5:memory','1:6,5:material'];assert.equal(C.validGame(duplicateSite),false,'each echo has exactly one choice');
+const forgedRelic=C.createGame();forgedRelic.relics=['lantern'];assert.equal(C.validGame(forgedRelic),false,'relics must come from the matching material choice');
 const ending=C.createGame();ending.echoChoices=['1:6,5:memory','2:5,5:memory','3:3,5:memory','4:1,7:memory'];ending.lucidity=4;assert.equal(C.resolveEnding(ending),'remembrance');
 const oldEnding=C.createGame();oldEnding.drownedRitual='listen';oldEnding.drownedClues=['tide','bell'];oldEnding.lucidity=4;assert.equal(C.resolveEnding(oldEnding),'revelation','existing ending keeps its priority');
+const secretPriority={...oldEnding,echoChoices:ending.echoChoices};assert.equal(C.resolveEnding(secretPriority),'remembrance','complete memory route must match its in-game promise');
 console.log('v6.4 echoes: memory route, four relic rewards, unique resolution, ending priority and schema-16 migration passed');
 
 const lantern=C.createGame();lantern.relics=['lantern'];lantern.sanity=70;C.dispatch(lantern,'relic:lantern');assert.equal(lantern.sanity,85);assert.deepEqual(lantern.relics,[]);

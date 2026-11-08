@@ -155,7 +155,7 @@ function renderUI(){
   const ending=state.ending&&core.ENDINGS[state.ending];
   const reveal=$('ending-reveal');reveal.hidden=!state.won||!ending;
   if(ending){$('ending-title').textContent=ending.title;$('ending-text').textContent=ending.text;}
-  $('ending-omens').textContent=state.won?'El destino se ha cumplido.':state.drownedRitual==='seal'?'Has sellado la Marea. El juramento de la Cripta también importa.':state.drownedRitual==='listen'?'Has escuchado la Marea. El conocimiento y la Lucidez abrirán o cerrarán una ruta secreta.':(state.echoChoices||[]).filter(v=>v.endsWith(':memory')).length===4?'Los cuatro recuerdos están a salvo. Conserva al menos 4 de Lucidez para oír la respuesta de la Catedral.':'La Marea todavía espera una decisión.';
+  $('ending-omens').textContent=state.won?'El destino se ha cumplido.':(state.echoChoices||[]).filter(v=>v.endsWith(':memory')).length===4?'Los cuatro recuerdos están a salvo. Conserva al menos 4 de Lucidez: esta ruta secreta prevalece sobre los demás desenlaces.':state.drownedRitual==='seal'?'Has sellado la Marea. El juramento de la Cripta también importa.':state.drownedRitual==='listen'?'Has escuchado la Marea. El conocimiento y la Lucidez abrirán o cerrarán una ruta secreta.':'La Marea todavía espera una decisión.';
   $('party').replaceChildren(...state.party.map(heroNode));
   if(focusedHero!==undefined)$('party').querySelector('[data-hero="'+focusedHero+'"]').focus({preventScroll:true});
   $('party-selection').textContent=String(state.selected+1).padStart(2,'0')+' / 04';
@@ -191,7 +191,7 @@ function renderUI(){
   const echo=core.echoAt(state),echoId=`${state.floor}:${state.x},${state.y}`,echoPending=echo&&!state.echoes.includes(echoId);
   $('echo-panel').hidden=!echoPending;
   if(echoPending){$('echo-title').textContent='ECO SIN DESCIFRAR · '+echo.name;$('echo-text').textContent=echo.text+' Elige una consecuencia; solo puedes llevarte una.';
-    $('echo-choices').replaceChildren(...[['GUARDAR EL RECUERDO · aporta al desenlace secreto','echo:memory'],['TOMAR '+echo.choiceB.toUpperCase()+' · reliquia de un uso','echo:material']].map(([label,action])=>{const b=element('button','gear-btn echo-choice',label);b.type='button';b.disabled=state.dead||state.won;b.addEventListener('click',()=>play(action));return b;}));
+    $('echo-choices').replaceChildren(...[['GUARDAR EL RECUERDO · aporta al desenlace secreto','echo:memory'],['TOMAR '+echo.choiceB.toUpperCase()+' · '+core.RELICS[echo.relic].use.toUpperCase(),'echo:material']].map(([label,action])=>{const b=element('button','gear-btn echo-choice',label);b.type='button';b.disabled=state.dead||state.won;b.addEventListener('click',()=>play(action));return b;}));
   }else $('echo-choices').replaceChildren();
   const shrineReady=state.x===1&&state.y===1&&!(state.shrines||[]).includes(state.floor);
   $('shrine-status').textContent=shrineReady?'ALTAR DE ENTRADA · Elige una vez: claridad o esencia.':(state.shrines||[]).includes(state.floor)?'ALTAR DE ENTRADA · Su luz ya se ha extinguido.':'ALTAR DE ENTRADA · Vuelve a (1,1) para elegir.';
@@ -207,7 +207,7 @@ function renderUI(){
   $('bag').replaceChildren(...[['POCIÓN · CURAR','potion',state.potions],['ESENCIA · MANÁ','ether',state.ether],['PERGAMINO · MAPA','scroll',state.scrolls]].map(([title,action,count])=>{
     const btn=element('button','gear-btn bag-slot',`${title} (${count})`);btn.type='button';
     btn.disabled=state.dead||state.won||count===0;btn.addEventListener('click',()=>play(action));return btn;
-  }),...state.relics.map(id=>{const relic=core.RELICS[id],btn=element('button','gear-btn relic-slot',`${relic.name} · USAR UNA VEZ`);btn.type='button';btn.disabled=state.dead||state.won;btn.title=relic.use;btn.addEventListener('click',()=>play('relic:'+id));return btn;}));
+  }),...state.relics.map(id=>{const relic=core.RELICS[id],label=`${relic.name} · ${relic.use} · USAR`;const btn=element('button','gear-btn relic-slot',label);btn.type='button';btn.disabled=state.dead||state.won;btn.title=label;btn.setAttribute('aria-label',`Usar ${relic.name}. ${relic.use}`);btn.addEventListener('click',()=>play('relic:'+id));return btn;}));
   const p=state.party[state.selected];
   const active=state.monsters.filter(m=>m.floor===state.floor && m.hp>0);
   $('bestiary').replaceChildren(...active.map(m=>{

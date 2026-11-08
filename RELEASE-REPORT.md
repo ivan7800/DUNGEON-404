@@ -4,9 +4,9 @@ Estado: rama de revisión; no publicada ni fusionada en `main`.
 
 Las cuatro cámaras de v6.3 ahora permiten elegir entre conservar un recuerdo o tomar una reliquia única. Linterna: +15 cordura. Espejo: protección para la siguiente fase enemiga. Brújula: +2 lucidez. Campana: interrumpe a los enemigos visibles hasta a dos casillas; si no hay objetivo, no se consume. Espejo y Campana activan la respuesta enemiga; las reliquias inmediatas no.
 
-Conservar los cuatro recuerdos y alcanzar el final con 4 o más de Lucidez desbloquea «La Catedral recuerda». Los finales de revelación y pacto conservan prioridad. `echoChoices` y `relics` son campos opcionales dentro del esquema 16; importar una partida anterior los inicializa vacíos y no modifica su progreso.
+Conservar los cuatro recuerdos y alcanzar el final con 4 o más de Lucidez desbloquea «La Catedral recuerda». Esta ruta secreta prevalece si también se cumplen las condiciones de revelación o pacto; de lo contrario se conservan las prioridades previas. `echoChoices` y `relics` son campos opcionales dentro del esquema 16; importar una partida anterior los inicializa vacíos y no modifica su progreso.
 
-Verificación de este addendum: prueba funcional de las cuatro cámaras, elecciones únicas, cuatro efectos, consumo y fallo sin objetivo, nuevo desenlace, prioridad de finales y migración. También se han actualizado la ayuda contextual, inventario, textos del panel de destinos, versión visible y parámetros de caché. No se afirma revisión visual en navegador ni GPU física para esta entrega hasta ejecutar esas comprobaciones.
+Verificación de este addendum: prueba funcional de las cuatro cámaras, elecciones únicas, cuatro efectos, consumo y fallo sin objetivo, nuevo desenlace, precedencia narrativa, validación de datos de eco/reliquia y migración. También se han actualizado la ayuda contextual, inventario, textos del panel de destinos, versión visible y parámetros de caché. No se afirma revisión visual en navegador ni GPU física para esta entrega hasta ejecutar esas comprobaciones.
 
 # Addendum v6.3 — exploración y revisión WebGL
 

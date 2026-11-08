@@ -327,9 +327,10 @@
     ,remembrance:Object.freeze({title:'LA CATEDRAL RECUERDA',text:'Habéis conservado los cuatro ecos sin venderlos por poder. Bajo el mar, la catedral pronuncia vuestros nombres verdaderos y abre una salida que no exige sacrificio: por primera vez, la Marea os deja marchar.'})
   });
   function resolveEnding(s){
+    // The four preserved echoes are the campaign's hardest optional route and take priority when complete.
+    if((s.echoChoices||[]).length===4&&(s.echoChoices||[]).every(v=>v.endsWith(':memory'))&&(s.lucidity||0)>=4)return 'remembrance';
     if(s.drownedRitual==='listen' && (s.drownedClues||[]).length===2 && (s.lucidity||0)>=4)return 'revelation';
     if(s.drownedRitual==='seal' && s.ritualSealed)return 'seal';
-    if((s.echoChoices||[]).length===4&&(s.echoChoices||[]).every(v=>v.endsWith(':memory'))&&(s.lucidity||0)>=4)return 'remembrance';
     return 'silence';
   }
   const monsterAt = (s,x,y) => s.monsters.find(m=>(m.floor||1)===s.floor && m.x===x && m.y===y && m.hp>0);
@@ -891,8 +892,8 @@
     if(s.ritualSealed!==undefined && typeof s.ritualSealed!=='boolean')return false;
     if(s.shrines!==undefined&&(!Array.isArray(s.shrines)||s.shrines.length>4||new Set(s.shrines).size!==s.shrines.length||s.shrines.some(v=>![1,2,3,4].includes(v))))return false;
     if(s.echoes!==undefined&&(!Array.isArray(s.echoes)||s.echoes.length>4||new Set(s.echoes).size!==s.echoes.length||s.echoes.some(v=>!Object.hasOwn(ECHO_SITES,v))))return false;
-    if(s.echoChoices!==undefined&&(!Array.isArray(s.echoChoices)||s.echoChoices.length>4||new Set(s.echoChoices).size!==s.echoChoices.length||s.echoChoices.some(v=>!Object.keys(ECHO_SITES).some(id=>v===id+':memory'||v===id+':material'))))return false;
-    if(s.relics!==undefined&&(!Array.isArray(s.relics)||s.relics.length>4||new Set(s.relics).size!==s.relics.length||s.relics.some(v=>!Object.hasOwn(RELICS,v))))return false;
+    if(s.echoChoices!==undefined&&(!Array.isArray(s.echoChoices)||s.echoChoices.length>4||new Set(s.echoChoices).size!==s.echoChoices.length||s.echoChoices.some(v=>!Object.keys(ECHO_SITES).some(id=>v===id+':memory'||v===id+':material'))||new Set(s.echoChoices.map(v=>v.slice(0,v.lastIndexOf(':')))).size!==s.echoChoices.length||s.echoChoices.some(v=>!s.echoes?.includes(v.slice(0,v.lastIndexOf(':'))))))return false;
+    if(s.relics!==undefined&&(!Array.isArray(s.relics)||s.relics.length>4||new Set(s.relics).size!==s.relics.length||s.relics.some(v=>!Object.hasOwn(RELICS,v)||!s.echoChoices?.includes(Object.keys(ECHO_SITES).find(id=>ECHO_SITES[id].relic===v)+':material'))))return false;
     const coord=(p,floor)=>Number.isInteger(p.x)&&Number.isInteger(p.y)&&passable(p.x,p.y,floor||1);
     const natural=(v,max=100000)=>Number.isInteger(v)&&v>=0&&v<=max;
     return !!s&&typeof s==='object'&&coord(s,s.floor)&&natural(s.dir,3)&&natural(s.selected,3)&&
