@@ -401,7 +401,7 @@
   // Readable forecast uses the same range and line-of-sight rules as enemyTurn.
   function threats(s){
     return s.monsters.filter(m=>m.hp>0&&(m.floor||1)===s.floor&&inLineOfSight(s,m,3)).map(m=>{
-      const d=distance(m,s),ranged=((m.kind==='specter'||(m.kind==='archivist'&&m.phaseAwakened))&&d===2)||(m.kind==='starseer'&&d<=3)||(m.kind==='cartographer'&&d===3)||(m.kind==='voidmoth'&&d===2);
+      const d=distance(m,s),ranged=((m.kind==='specter'||(m.kind==='archivist'&&m.phaseAwakened)||(m.kind==='firstname'&&m.phaseAwakened))&&d===2)||(m.kind==='starseer'&&d<=3)||(m.kind==='cartographer'&&d===3)||(m.kind==='voidmoth'&&d===2);
       return {name:m.name,hp:m.hp,max:m.max,phase:BOSS_KINDS.includes(m.kind)&&m.hp<=m.max/2?2:1,
         text:m.frozen||m.staggered?'INMOVILIZADO':m.telegraph&&(d===1||ranged)?'ATAQUE PREPARADO · defiende, interrumpe o rompe la línea de visión':d===1||ranged?'EN ALCANCE · puede atacar en tu próxima acción':'SE APROXIMA',
         danger:!m.frozen&&!m.staggered&&!!m.telegraph&&(d===1||ranged)};
@@ -422,7 +422,7 @@
         m.phaseAwakened=true;
         report(s,`${m.name} rompe su sello: FASE II. ${m.kind==='warden'?'Su armadura se abre, pero el golpe anunciado será más fuerte.':m.kind==='king'?'Su drenaje aumenta a 3 PM; el golpe anunciado será más fuerte.':m.kind==='archivist'?'Su pulso alcanza dos casillas; el golpe anunciado será más fuerte.':'El golpe anunciado rasgará el velo con más fuerza.'}`,events,'warning');
       }
-      const ranged=((m.kind==='specter'||(m.kind==='archivist'&&m.phaseAwakened))&&d===2&&inLineOfSight(s,m))||
+      const ranged=((m.kind==='specter'||(m.kind==='archivist'&&m.phaseAwakened)||(m.kind==='firstname'&&m.phaseAwakened))&&d===2&&inLineOfSight(s,m))||
         (m.kind==='starseer'&&d<=3&&inLineOfSight(s,m,3))||
         (m.kind==='cartographer'&&d===3&&inLineOfSight(s,m,3))||
         (m.kind==='voidmoth'&&d===2&&inLineOfSight(s,m));
@@ -435,7 +435,11 @@
             starseer:'El Astrónomo inclina el rostro vacío; las estrellas se alinean sobre la compañía.',
             chorus:'La Madre abre sus tres bocas. El agua de las paredes empieza a cantar.',
             cartographer:'El Cartógrafo traza una herida luminosa en el aire. Algo va a cruzarla.',
-            voidmoth:'La Polilla extiende sus alas y cubre la luz. Un polvo negro cae sobre vosotros.'
+            voidmoth:'La Polilla extiende sus alas y cubre la luz. Un polvo negro cae sobre vosotros.',
+            warden:m.phaseAwakened?'El Confesor golpea el suelo: la onda alcanza a quien permanezca a su alcance.':'El Confesor alza el hierro ritual. Interrúmpelo o prepara la guardia.',
+            king:m.phaseAwakened?'El Rey pronuncia un nombre. El siguiente impacto robará fuerza y maná.':'El Rey traza una runa en el aire. El golpe está por llegar.',
+            archivist:m.phaseAwakened?'El Archivista abre el libro: su pulso alcanza dos casillas despejadas.':'Las páginas del Archivista se vuelven solas. Algo se prepara.',
+            firstname:m.phaseAwakened?'El Primer Nombre rasga el velo: el impacto cubrirá dos casillas despejadas.':'El Primer Nombre contiene el aliento de la cripta.'
           }[m.kind]||`${m.name} eleva su arma ritual. El próximo golpe será devastador: defiende o interrumpe.`;
           report(s,warning,events,'warning');
           continue;

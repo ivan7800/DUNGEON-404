@@ -1,3 +1,13 @@
+# v6.2 — Ecos del segundo sello (rama de revisión)
+
+- Avisos de ataque con texto propio para los cuatro jefes y su fase II.
+- El Primer Nombre gana un golpe a distancia de dos casillas despejadas en fase II; el pronóstico respeta paredes.
+- Sigilo animado bajo jefes en WebGL; alerta carmesí en el Canvas para golpes preparados.
+- Destellos de combate más legibles.
+- Prueba de fase, pronóstico, ataque y línea de visión.
+
+---
+
 # v6.1 — Juramentos de progreso (rama de revisión)
 
 - Dos elecciones permanentes al nivel 2 para cada personaje, integradas en Inventario.

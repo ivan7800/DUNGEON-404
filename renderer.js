@@ -333,6 +333,8 @@ function createRenderer(canvas,mapCanvas,core){
     if(effect==='frost'){ctx.fillStyle='rgba(113,202,236,.23)';ctx.fillRect(0,0,W,H);}
     if(effect==='ward'){ctx.fillStyle='rgba(224,185,94,.14)';ctx.fillRect(0,0,W,H);}
     if(s.ward>0){ctx.strokeStyle='rgba(235,198,115,.55)';ctx.lineWidth=5;ctx.strokeRect(5,5,W-10,H-10);}
+    const phaseBoss=s.monsters.find(m=>m.hp>0&&(m.floor||1)===s.floor&&['warden','king','archivist','firstname'].includes(m.kind)&&m.phaseAwakened);
+    if(phaseBoss){const pulse=.10+.07*(.5+.5*Math.sin(time*.006));ctx.strokeStyle=phaseBoss.telegraph?`rgba(219,91,82,${pulse+.12})`:`rgba(166,105,205,${pulse})`;ctx.lineWidth=phaseBoss.telegraph?4:2;ctx.beginPath();ctx.arc(W/2,H/2,Math.min(W,H)*(.34+.018*Math.sin(time*.004)),0,TAU);ctx.stroke();if(phaseBoss.telegraph){ctx.fillStyle='rgba(126,34,49,.07)';ctx.fillRect(0,0,W,H);}}
     if(effect==='heal'){ctx.fillStyle='rgba(56,146,97,.12)';ctx.fillRect(0,0,W,H);}
     ctx.strokeStyle='rgba(231,204,155,.55)';ctx.lineWidth=1.4;
     ctx.beginPath();ctx.moveTo(W/2-8,H/2);ctx.lineTo(W/2+8,H/2);ctx.moveTo(W/2,H/2-8);ctx.lineTo(W/2,H/2+8);ctx.stroke();

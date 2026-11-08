@@ -1,3 +1,11 @@
+# Addendum v6.2 — rama de revisión
+
+La fase II del Primer Nombre incorpora alcance de dos casillas con línea de visión; cada jefe anuncia su ataque con un texto propio. Canvas señala telegráficos en carmesí y WebGL dibuja un sigilo dinámico bajo los jefes.
+
+Verificación: sintaxis JS y suite completa de scripts; prueba nueva de aviso, impacto a distancia y bloqueo por muro. No se ha verificado WebGL en una GPU física, pantalla táctil real ni rendimiento en hardware físico. La exploración existente conserva cuatro mapas, secretos y sucesos únicos con consecuencias; esta rama no añade nuevos mapas.
+
+---
+
 # Addendum v6.1 — revisión
 
 La rama v6.1 incorpora juramentos al nivel 2 y altares de entrada con decisiones de recurso. Conservar el esquema 16 permite importar guardados v6.0; el nuevo campo `shrines` se inicializa vacío y `path` es opcional. La revisión WebGL en GPU, exportación de JSON descargado e importación de archivo y móvil físico continúan pendientes. Verificación local: 45 scripts JavaScript y sintaxis del motor e interfaz superados; recorrido de victoria existente superado. La pantalla de inicio v6.1 se abrió en Chrome compartido y mostró el altar y las cuatro pestañas. El flujo de descarga e importación JSON, WebGL en GPU y móvil físico siguen sin comprobación real.
