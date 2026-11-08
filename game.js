@@ -6,10 +6,12 @@ if(!core||!window.DungeonRenderer)throw Error('Required game modules did not loa
 const $=id=>document.getElementById(id);
 let renderer;
 let renderMode='auto';
+let renderQuality='smooth';
+try{if(JSON.parse(localStorage.getItem('d404-presentation')||'{}')?.quality==='economy')renderQuality='economy';}catch(_){}
 function createCanvas(){
  const previous=$('view');
  const next=document.createElement('canvas');
- next.id='view';next.width=960;next.height=540;
+ next.id='view';next.width=renderQuality==='economy'?480:960;next.height=next.width*9/16;
  next.setAttribute('aria-label','Vista de mazmorra en primera persona');
  previous.replaceWith(next);
  return next;
@@ -326,6 +328,10 @@ $('graphics-mode').addEventListener('change',event=>{
  initRenderer(event.target.value);
  safeWorld(state,performance.now(),effect);
  renderer.renderMap(state,showMap);
+});
+window.addEventListener('d404-qualitychange',event=>{
+ const next=event.detail==='economy'?'economy':'smooth';if(next===renderQuality)return;
+ renderQuality=next;initRenderer(renderMode);safeWorld(state,performance.now(),effect);renderer.renderMap(state,showMap);
 });
 $('save').addEventListener('click',save);
 $('export-save').addEventListener('click',exportGame);

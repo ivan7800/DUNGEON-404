@@ -91,6 +91,8 @@ for test in tests/*.js; do node "$test" || exit 1; done
 
 `tests/browser-lab.html` ofrece escenarios reproducibles de las cuatro plantas y un jefe en fase II, una vista de 390 px y una medición de dibujo. Utiliza la interfaz real; restaura el guardado anterior tras cargar cada escenario. No pulses Guardar en un escenario si deseas conservar tu partida local. Este banco es para revisión manual, no una prueba automática de navegador.
 
+El modo económico usa una resolución interna de 480 × 270 y limita el dibujo; el modo suave usa 960 × 540. Cambiarlo reconstruye el lienzo y conserva la partida.
+
 La instrumentación informa tiempo CPU de dibujo y frecuencia observada en el navegador que la ejecuta; no mide GPU ni certifica rendimiento en un equipo físico. El informe de entrega detalla la revisión de Canvas y la indisponibilidad de WebGL en el navegador compartido.
 
 ## Auditoría v6.6

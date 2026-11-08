@@ -63,7 +63,12 @@ const server=http.createServer((req,res)=>{
   await page.locator('#release-help').click();assert(await page.locator('dialog[open]').isVisible());
   const turn=await page.evaluate(()=>Dungeon404.snapshot().turn);await page.locator('dialog').press('w');assert.equal(await page.evaluate(()=>Dungeon404.snapshot().turn),turn);
   await page.locator('.guide-close').click();
-  await page.locator('#release-fullscreen').click();report.fullscreen=await page.evaluate(()=>!!document.fullscreenElement);if(report.fullscreen){await page.locator('#exit-fullscreen').click();await page.waitForFunction(()=>!document.fullscreenElement);}await page.locator('#release-film').click();await page.locator('#release-quality').click();await page.locator('#release-quality').click();
+  await page.locator('#release-fullscreen').click();report.fullscreen=await page.evaluate(()=>!!document.fullscreenElement);if(report.fullscreen){await page.locator('#exit-fullscreen').click();await page.waitForFunction(()=>!document.fullscreenElement);}await page.locator('#release-film').click();
+  const qualityTurn=await page.evaluate(()=>Dungeon404.snapshot().turn);
+  assert.equal(await page.locator('#view').evaluate(canvas=>canvas.width),480);
+  await page.locator('#release-quality').click();assert.equal(await page.locator('#view').evaluate(canvas=>canvas.width),960);
+  await page.locator('#release-quality').click();assert.equal(await page.locator('#view').evaluate(canvas=>canvas.width),480);
+  assert.equal(await page.evaluate(()=>Dungeon404.snapshot().turn),qualityTurn);
   await page.locator('.advanced-actions summary').click();
   const actions=await page.locator('[data-action]').evaluateAll(nodes=>[...new Set(nodes.map(n=>n.dataset.action))]);
   for(const action of actions){console.log('BROWSER: action',action);
