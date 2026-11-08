@@ -821,13 +821,13 @@ function createRenderer(canvas,mapCanvas,core){
   }
   gl.viewport(0,0,canvas.width,canvas.height);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(program);
   gl.uniformMatrix4fv(projLoc,false,perspective(Math.PI/2.85,canvas.width/canvas.height,.06,40));gl.uniformMatrix4fv(viewLoc,false,look(eye,forward));
-  gl.uniform3fv(eyeLoc,eye);gl.uniform1f(tickLoc,t);gl.uniform1f(floorLoc,s.floor);gl.uniform3fv(lightsLoc,new Float32Array(lights.flat()));
+  gl.uniform3fv(eyeLoc,eye);gl.uniform1f(tickLoc,t);gl.uniform1f(floorLoc,s.floor);gl.uniform3fv(lightsLoc,new Float32Array(lights.flatMap(light=>light.slice(0,3))));
   gl.uniform1f(impactLoc,/attack|hit|hurt|damage|boss/i.test(String(effect||'')) ? Math.max(0,Math.sin((currentTime%500)/500*Math.PI)) : 0);
   gl.uniform1f(dreadLoc,dreadIntensity);
   gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(scene),gl.DYNAMIC_DRAW);gl.drawArrays(gl.TRIANGLES,0,scene.length/9);
   const error=gl.getError?.();if(error&&error!==gl.NO_ERROR)throw Error(`WebGL draw error: 0x${error.toString(16)}`);
  }
- return {renderWorld,dispose,renderMap:mapRenderer.renderMap,backend:'WebGL 3D — La Catedral de la Marea v6.0',diagnostics:{cathedralBays:true,depthFurnishings:true,floorAtmospheres:true,blackWater:true,cinematicImpact:true,tonemapping:true,dreadVisuals:true,dreadApparitions:true,openingApparition:true,wallMountedTorches:true,scarredStone:true,bloodTrail:true,boneDebris:true,pointedRibs:true,threatTelegraphs:true,ritualVisualState:true,wetStone:true,arcaneVeins:true,shaderLinked:true,materials:23,creatureAnimation:true,shaderCompiled:true,drawChecked:true,architecturalReliefs:true,combatMotion:true,ambientMotes:true,runicReliefs:true,creatureAttackProfiles:true,cosmicCreaturePose:true,spellTrajectories:true,sculptedCreatures:true,facetedShrine:true,gothicRelief:true,artLabReady:true,gothicShowcase:true,ritualGallery:true,glbStudio:true}};
+ return {renderWorld,dispose,renderMap:mapRenderer.renderMap,backend:'WebGL 3D — La Catedral de la Marea',diagnostics:{cathedralBays:true,depthFurnishings:true,floorAtmospheres:true,blackWater:true,cinematicImpact:true,tonemapping:true,dreadVisuals:true,dreadApparitions:true,openingApparition:true,wallMountedTorches:true,scarredStone:true,bloodTrail:true,boneDebris:true,pointedRibs:true,threatTelegraphs:true,ritualVisualState:true,wetStone:true,arcaneVeins:true,shaderLinked:true,materials:23,creatureAnimation:true,shaderCompiled:true,drawChecked:true,architecturalReliefs:true,combatMotion:true,ambientMotes:true,runicReliefs:true,creatureAttackProfiles:true,cosmicCreaturePose:true,spellTrajectories:true,sculptedCreatures:true,facetedShrine:true,gothicRelief:true,artLabReady:true,gothicShowcase:true,ritualGallery:true,glbStudio:true}};
 }
 root.Dungeon3DRenderer={createRenderer};
 })(typeof globalThis!=='undefined'?globalThis:this);

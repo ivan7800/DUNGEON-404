@@ -90,6 +90,8 @@ const server=http.createServer((req,res)=>{
   for(const width of [390,320]){
    await page.setViewportSize({width,height:844});
    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth),`overflow at ${width}`);
+   console.log('BROWSER: mobile',width,JSON.stringify(await page.locator('[data-touch-hero="2"]').evaluate(el=>({width:innerWidth,media:matchMedia('(max-width:760px)').matches,display:getComputedStyle(el).display,parent:getComputedStyle(el.parentElement).display,hidden:!!el.closest('[hidden]'),bounds:el.getBoundingClientRect().toJSON()}))));
+   await page.screenshot({timeout:30000,path:path.join(evidence,`mobile-${width}-before.png`),fullPage:true});
    await page.locator('[data-touch-hero="2"]').click();assert.equal(await page.evaluate(()=>Dungeon404.snapshot().selected),2);
    await page.screenshot({timeout:30000,path:path.join(evidence,`mobile-${width}.png`),fullPage:true});
   }
