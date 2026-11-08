@@ -14,5 +14,6 @@ document.getElementById('release-help').onclick=()=>help.showModal();
 document.getElementById('release-film').onclick=()=>{settings.film=!settings.film;update()};
 document.getElementById('release-quality').onclick=()=>{settings.quality=settings.quality==='smooth'?'economy':'smooth';update()};
 document.getElementById('release-fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.querySelector('.viewport').requestFullscreen()}catch{document.getElementById('release-fullscreen').textContent='NO DISPONIBLE'}};
+document.getElementById('exit-fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen()}catch{document.getElementById('exit-fullscreen').textContent='PULSA ESC PARA SALIR'}};
 update();
 })();

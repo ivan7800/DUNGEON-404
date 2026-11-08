@@ -20,19 +20,21 @@ const server=http.createServer((req,res)=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const base=`http://127.0.0.1:${server.address().port}${prefix}`;
  let browser;
- const report={routes:prefix,errors:[],failedRequests:[],scenarios:[],buttons:[],console:[],downloads:false,import:false,canvas:false,webgl:false};
+ const report={routes:prefix,errors:[],failedRequests:[],scenarios:[],webglFloors:[],buttons:[],console:[],downloads:false,import:false,canvas:false,webgl:false};
  try{
   browser=await chromium.launch({headless:true,...(process.env.D404_CHROMIUM_PATH?{executablePath:process.env.D404_CHROMIUM_PATH}:{}),args:['--no-sandbox','--disable-dev-shm-usage','--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});
   report.browser=browser.version();
   console.log('BROWSER: launched',report.browser);
   const context=await browser.newContext({viewport:{width:1440,height:1100},acceptDownloads:true});
-  const page=await context.newPage();page.setDefaultTimeout(10000);page.setDefaultNavigationTimeout(30000);
+  const page=await context.newPage();page.setDefaultTimeout(20000);page.setDefaultNavigationTimeout(30000);
   page.on('console',message=>{if(['warning','error'].includes(message.type()))report.console.push({type:message.type(),text:message.text()});});
   page.on('pageerror',error=>report.errors.push(String(error)));
   page.on('response',response=>{if(response.status()>=400)report.failedRequests.push(response.url()+' '+response.status());});
   await page.addInitScript(()=>localStorage.setItem('d404-presentation',JSON.stringify({film:true,quality:'economy'})));
   console.log('BROWSER: opening game');await page.goto(base);await page.waitForFunction(()=>window.Dungeon404);
+  await page.waitForFunction(()=>Dungeon404.performance().samples>0);
   report.webgl=(await page.locator('#graphics-status').innerText()).includes('WebGL 3D');
+  if(process.env.D404_REQUIRE_WEBGL==='1')assert(report.webgl,'This runner must draw a real WebGL frame before falling back to Canvas');
   report.initialGraphics=await page.locator('#graphics-status').innerText();console.log('BROWSER: graphics',report.initialGraphics);
   console.log('BROWSER: direct controls');await page.locator('#quick-sound').click();
   assert.equal(await page.locator('#quick-sound').getAttribute('aria-pressed'),'true');
@@ -56,10 +58,12 @@ const server=http.createServer((req,res)=>{
   assert.equal((await page.evaluate(()=>Dungeon404.snapshot())).turn,previous.turn);
   await page.locator('#load').click();assert.match(await page.locator('#message').innerText(),/recuperada/);
   page.once('dialog',dialog=>dialog.dismiss());await page.locator('#reset').click();
+  page.once('dialog',dialog=>dialog.accept());await page.locator('#reset').click();assert.equal(await page.evaluate(()=>Dungeon404.snapshot().turn),0);
   await page.locator('#toggle-map').click();assert.match(await page.locator('#toggle-map').innerText(),/MOSTRAR/);await page.locator('#toggle-map').click();
   await page.locator('#release-help').click();assert(await page.locator('dialog[open]').isVisible());
   const turn=await page.evaluate(()=>Dungeon404.snapshot().turn);await page.locator('dialog').press('w');assert.equal(await page.evaluate(()=>Dungeon404.snapshot().turn),turn);
-  await page.locator('.guide-close').click();await page.locator('#release-film').click();await page.locator('#release-quality').click();await page.locator('#release-quality').click();
+  await page.locator('.guide-close').click();
+  await page.locator('#release-fullscreen').click();report.fullscreen=await page.evaluate(()=>!!document.fullscreenElement);if(report.fullscreen){await page.locator('#exit-fullscreen').click();await page.waitForFunction(()=>!document.fullscreenElement);}await page.locator('#release-film').click();await page.locator('#release-quality').click();await page.locator('#release-quality').click();
   await page.locator('.advanced-actions summary').click();
   const actions=await page.locator('[data-action]').evaluateAll(nodes=>[...new Set(nodes.map(n=>n.dataset.action))]);
   for(const action of actions){console.log('BROWSER: action',action);
@@ -74,6 +78,13 @@ const server=http.createServer((req,res)=>{
    assert.equal(await page.evaluate(()=>Dungeon404.snapshot().floor),floor);
    await page.locator('#tab-quest').click();await page.screenshot({timeout:30000,path:path.join(evidence,`depth-${floor}.png`),fullPage:true});
    report.scenarios.push(floor);
+   if(report.webgl){
+    await page.locator('#tab-settings').click();await page.locator('#graphics-mode').selectOption('webgl');
+    assert.match(await page.locator('#graphics-status').innerText(),/WebGL 3D/);
+    await page.locator('#view').screenshot({timeout:30000,path:path.join(evidence,`webgl-depth-${floor}.png`)});
+    assert.match(await page.locator('#graphics-status').innerText(),/WebGL 3D/,'renderer must survive the actual draw');
+    report.webglFloors.push(floor);await page.locator('#graphics-mode').selectOption('canvas');
+   }
   }
   // Real boss telegraph and interrupt through the same public controls as a player.
   console.log('BROWSER: boss scenario');const state=C.createGame(),boss=state.monsters.find(m=>m.kind==='warden');
@@ -100,10 +111,12 @@ const server=http.createServer((req,res)=>{
   for(const floor of ['1','2','3','4'])await page.locator('#floor').selectOption(floor);
   for(const kind of ['crawler','specter','warden','drowned','tideborn','librarian','archivist','firstname'])await page.locator('#creature').selectOption(kind);
   for(const action of ['left','right','forward','back','strafeLeft','strafeRight'])await page.locator(`[data-move="${action}"]`).click();
+  await page.locator('#creature').selectOption('warden');await page.locator('#glb').check();await page.waitForFunction(()=>document.getElementById('status').textContent.includes('cargado'));await page.locator('#glb').uncheck();
   await page.locator('#attack').click();await page.locator('#animate').uncheck();await page.locator('#showcase').uncheck();await page.locator('#reset').click();
   const pngPending=page.waitForEvent('download');await page.locator('#snapshot').click();const png=await pngPending;await png.saveAs(path.join(evidence,'lab.png'));
   assert.equal(fs.readFileSync(path.join(evidence,'lab.png')).subarray(1,4).toString(),'PNG');
   assert.deepEqual(report.errors,[]);assert.deepEqual(report.failedRequests,[]);
+  assert(!report.console.some(entry=>/WebGL draw error|uniform3fv: invalid size|WebGL error;/.test(entry.text)),'Real graphics errors must fail the browser audit');
   fs.writeFileSync(path.join(evidence,'browser-report.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));console.log('Evidence:',evidence);
  }catch(error){report.failure=String(error.stack||error);throw error;}finally{fs.writeFileSync(path.join(evidence,'browser-report.json'),JSON.stringify(report,null,2));server.closeAllConnections?.();server.close();if(browser)await browser.close();}
 })().catch(error=>{console.error('::error::'+String(error.stack||error).replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A'));process.exit(1);});
