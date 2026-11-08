@@ -158,6 +158,31 @@
     '3:6,9':{run(s){s.ether=Math.min(1000,s.ether+1);return 'La tinta deja una esencia atrapada en el mapa (+1 esencia).';}},
     '4:7,3':{run(s){s.sanity=clampSanity(s.sanity+5);return 'La luz bajo el osario calma el pulso (+5 cordura).';}}
   });
+  // Side-chamber echoes are optional, one-choice discoveries separate from existing beat rewards.
+  const ECHO_SITES=Object.freeze({
+    '1:6,5':Object.freeze({name:'El quinto paso',text:'El eco espera a que la compañía respire al unísono.',choiceA:'memoria',choiceB:'poción'}),
+    '2:5,5':Object.freeze({name:'La bóveda suspendida',text:'Tras el agua inmóvil, una voz ofrece calma o poder.',choiceA:'calma',choiceB:'esencia'}),
+    '3:3,5':Object.freeze({name:'El corredor que vuelve',text:'La inscripción cambia cuando apartas la mirada.',choiceA:'lucidez',choiceB:'pergamino'}),
+    '4:1,7':Object.freeze({name:'El nicho que pronuncia',text:'Una voz ofrece descanso a cambio de que olvidéis su rostro.',choiceA:'cordura',choiceB:'poción'})
+  });
+  function echoAt(s){return ECHO_SITES[`${s.floor}:${s.x},${s.y}`]||null;}
+  function resolveEcho(s,events,choice){
+    const id=`${s.floor}:${s.x},${s.y}`,site=ECHO_SITES[id];
+    if(!site||s.echoes.includes(id)){report(s,'Aquí no queda ningún eco sin resolver.',events,'warning');return;}
+    s.echoes.push(id);
+    if(choice==='memory'){
+      if(s.floor===1)s.lucidity=Math.min(10,s.lucidity+1);
+      else if(s.floor===2)s.sanity=clampSanity(s.sanity+8);
+      else if(s.floor===3)s.lucidity=Math.min(10,s.lucidity+1);
+      else s.sanity=clampSanity(s.sanity+6);
+      report(s,`${site.name}: conservas el recuerdo. ${site.choiceA} queda atrás.`,events,'lore');
+    }else{
+      if(s.floor===1||s.floor===4)s.potions=Math.min(1000,s.potions+1);
+      else if(s.floor===2)s.ether=Math.min(1000,s.ether+1);
+      else s.scrolls=Math.min(1000,s.scrolls+1);
+      report(s,`${site.name}: tomas ${site.choiceB}. El eco se apaga.`,events,'loot');
+    }
+  }
   const TRAPS = new Set(['3,7','9,11']);
   // Hidden masonry: discover it by facing a suspicious wall and interacting (E).
   // Every location has its own reward; caches can only be opened once per save.
@@ -274,7 +299,7 @@
       schema:VERSION, floor:1, x:1,y:1,dir:1,party:HEROES.map(h=>({...h})),selected:0,
       potions:3,ether:2,scrolls:1,key:false,sigil:false,voidHeart:false,finalRune:false,turn:0,won:false,ending:null,dead:false,guard:null,ward:0,
       sanity:100,lucidity:0,tomesRead:[],knowledge:[],witnessed:[],ritualSealed:false,drownedClues:[],drownedRitual:'none',secretsFound:[],gear:[],gearFound:[],gateOpen:false,labyrinthGateOpen:false,disarmedTraps:[],visitedByFloor:{1:['1,1'],2:[],3:[],4:[]},
-      shrines:[],
+      shrines:[],echoes:[],
       visited:['1,1'],monsters:[...START_MONSTERS,...LOWER_MONSTERS,...LABYRINTH_MONSTERS,...ABYSS_MONSTERS,...COSMIC_ROAMERS].map(m=>({...m})),
       items:['3,11','4,13'],trapsTriggered:[],loreRead:[],
       messages:['Prólogo: la expedición ha desaparecido. Las campanas suenan bajo la tierra. Investiga las inscripciones (I).']
@@ -806,6 +831,7 @@
     else if(action==='signature')signature(s,events,rng);
     else if(action==='path:bulwark'||action==='path:edge')choosePath(s,events,action.slice(5));
     else if(action==='shrine:mind'||action==='shrine:ether')shrine(s,events,action.slice(7));
+    else if(action==='echo:memory'||action==='echo:material')resolveEcho(s,events,action.slice(5));
     else if(action==='attack')attack(s,events,rng);
     else if(action==='guard')guard(s,events,rng);
     else if(action==='interact')interact(s,events);
@@ -848,6 +874,7 @@
     if(s.witnessed!==undefined && (!Array.isArray(s.witnessed)||s.witnessed.length>3||new Set(s.witnessed).size!==s.witnessed.length||s.witnessed.some(k=>!['lurker','crawler','warden'].includes(k))))return false;
     if(s.ritualSealed!==undefined && typeof s.ritualSealed!=='boolean')return false;
     if(s.shrines!==undefined&&(!Array.isArray(s.shrines)||s.shrines.length>4||new Set(s.shrines).size!==s.shrines.length||s.shrines.some(v=>![1,2,3,4].includes(v))))return false;
+    if(s.echoes!==undefined&&(!Array.isArray(s.echoes)||s.echoes.length>4||new Set(s.echoes).size!==s.echoes.length||s.echoes.some(v=>!Object.hasOwn(ECHO_SITES,v))))return false;
     const coord=(p,floor)=>Number.isInteger(p.x)&&Number.isInteger(p.y)&&passable(p.x,p.y,floor||1);
     const natural=(v,max=100000)=>Number.isInteger(v)&&v>=0&&v<=max;
     return !!s&&typeof s==='object'&&coord(s,s.floor)&&natural(s.dir,3)&&natural(s.selected,3)&&
@@ -881,7 +908,7 @@
   function importSave(raw){
     if(!raw||typeof raw!=='object')return null;
     const previous=raw.schema||3;
-    const s={...raw,schema:VERSION,shrines:raw.shrines===undefined?[]:raw.shrines,
+    const s={...raw,schema:VERSION,shrines:raw.shrines===undefined?[]:raw.shrines,echoes:raw.echoes===undefined?[]:raw.echoes,
       ending:raw.ending===undefined?(raw.won?'silence':null):raw.ending,
       sanity:raw.sanity===undefined?100:raw.sanity,
       lucidity:raw.lucidity===undefined?0:raw.lucidity,
@@ -946,5 +973,5 @@
     return s;
   }
   return {VERSION,SAVE_KEY,V15_SAVE_KEY,V14_SAVE_KEY,V13_SAVE_KEY,SECRETS,V12_SAVE_KEY,V11_SAVE_KEY,V10_SAVE_KEY,V9_SAVE_KEY,V8_SAVE_KEY,V7_SAVE_KEY,PREVIOUS_SAVE_KEY,V5_SAVE_KEY,LEGACY_SAVE_KEY,V4_SAVE_KEY,LEVEL,LOWER,LABYRINTH,ABYSS,COSMIC_CLUES,FORBIDDEN_TOMES,DROWNED_TEXTS,COSMIC_ENEMIES,ENDINGS,resolveEnding,WIDTH,HEIGHT,DIRS,LORES,TRAPS,GEAR,BESTIARY,PORTCULLIS,PRESSURE_PLATE,gateAt,
-    SPECIALTIES,PATHS,threats,tile,wallAt,passable,createGame,monsterAt,dispatch,validGame,importSave};
+    SPECIALTIES,PATHS,ECHO_SITES,echoAt,threats,tile,wallAt,passable,createGame,monsterAt,dispatch,validGame,importSave};
 });

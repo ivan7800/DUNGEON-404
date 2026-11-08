@@ -188,6 +188,11 @@ function renderUI(){
     [!state.monsters.some(m=>m.kind==='firstname'&&m.hp>0),'Derrota al Primer Nombre'],
     [state.won,'Escapa del Osario (E)']
   ];
+  const echo=core.echoAt(state),echoId=`${state.floor}:${state.x},${state.y}`,echoPending=echo&&!state.echoes.includes(echoId);
+  $('echo-panel').hidden=!echoPending;
+  if(echoPending){$('echo-title').textContent='ECO SIN DESCIFRAR · '+echo.name;$('echo-text').textContent=echo.text+' Elige una consecuencia; solo puedes llevarte una.';
+    $('echo-choices').replaceChildren(...[['GUARDAR EL RECUERDO','echo:memory'],['TOMAR '+echo.choiceB.toUpperCase(),'echo:material']].map(([label,action])=>{const b=element('button','gear-btn echo-choice',label);b.type='button';b.disabled=state.dead||state.won;b.addEventListener('click',()=>play(action));return b;}));
+  }else $('echo-choices').replaceChildren();
   const shrineReady=state.x===1&&state.y===1&&!(state.shrines||[]).includes(state.floor);
   $('shrine-status').textContent=shrineReady?'ALTAR DE ENTRADA · Elige una vez: claridad o esencia.':(state.shrines||[]).includes(state.floor)?'ALTAR DE ENTRADA · Su luz ya se ha extinguido.':'ALTAR DE ENTRADA · Vuelve a (1,1) para elegir.';
   $('shrine-choices').replaceChildren(...(shrineReady?[["RECUPERAR 12 CORDURA","shrine:mind"],["TOMAR 1 ESENCIA","shrine:ether"]].map(([label,action])=>{const b=element('button','gear-btn',label);b.type='button';b.addEventListener('click',()=>play(action));return b;}):[]));

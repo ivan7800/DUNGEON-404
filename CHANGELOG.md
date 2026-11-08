@@ -1,3 +1,12 @@
+# v6.3 — Ecos de las cámaras sumergidas (rama)
+
+- Cuatro descubrimientos opcionales situados en salas existentes, uno en cada profundidad.
+- Elección entre memoria y material; consecuencia única, persistida y sin coste de turno.
+- Migración opcional `echoes` compatible con los guardados de esquema 16.
+- Revisión del fallback WebGL a Canvas al perder el contexto.
+
+---
+
 # v6.2 — Ecos del segundo sello (rama de revisión)
 
 - Avisos de ataque con texto propio para los cuatro jefes y su fase II.

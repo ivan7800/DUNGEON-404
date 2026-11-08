@@ -1,10 +1,10 @@
-# DUNGEON 404 — La Catedral de la Marea · v6.2
+# DUNGEON 404 — La Catedral de la Marea · v6.3
 
 Dungeon crawler por casillas y acciones: cuatro aventureros descienden por catedrales enterradas bajo un océano cósmico. La campaña conserva sus cuatro profundidades, investigación, rituales, equipo, cordura, ocho secretos y tres finales.
 
 La campaña continúa la progresión y los sistemas de las versiones v4.2 y v4.3.
 
-La versión v6.0 está publicada. Esta propuesta prepara v6.2; consulta [RELEASE-REPORT.md](RELEASE-REPORT.md) para el alcance y los límites verificados.
+La versión v6.2 está publicada. Esta propuesta prepara v6.3; consulta [RELEASE-REPORT.md](RELEASE-REPORT.md) para el alcance y los límites verificados.
 
 ## Iniciar
 
@@ -43,9 +43,13 @@ La barra bajo la escena muestra enemigos en línea de visión, vida, fase y ataq
 
 Al llegar al nivel 2, cada aventurero elige una vez en Inventario: Bastión (+6 PV máximos y +1 defensa) o Filo (+2 daño y un refuerzo adicional a su especialidad: bloqueo para Aldric, corte para Mara, escarcha para Ilyra, Santuario para Borin). Elegir no consume turno. Los guardados anteriores conservan el esquema 16 y pueden elegir cuando cumplan el requisito.
 
-## Jefes y combate v6.2
+## Jefes y combate v6.3
 
 Las fases II conservan señales legibles y ahora usan avisos propios por jefe. El Primer Nombre alcanza dos casillas despejadas en fase II; la barra de amenaza anticipa ese alcance y no muestra ataques tras los muros. En WebGL, un sigilo dinámico distingue fase activa y golpe preparado. Las señales de impacto duran más para que se perciban al jugar.
+
+## Ecos explorables v6.3
+
+Cuatro cámaras secundarias, una por profundidad, contienen ecos que ofrecen una elección única entre preservar una huella mental y recoger un recurso. Se resuelven desde el panel de aventura; el panel solo aparece en la sala correspondiente. La decisión se guarda en esquema 16 y no consume turno.
 
 ## Altares de entrada (v6.1)
 

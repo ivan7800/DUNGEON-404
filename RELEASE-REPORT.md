@@ -1,3 +1,9 @@
+# Addendum v6.3 — exploración y revisión WebGL
+
+La rama añade cuatro ecos opcionales en cámaras existentes. Cada sala ofrece una elección de memoria o recurso, se registra una sola vez y se conserva en guardados v6.0/v6.1/v6.2 mediante el campo opcional `echoes` sin cambiar el esquema 16.
+
+WebGL: revisión estática de shaders, creación del contexto, errores GL por frame y recuperación Canvas. No hay GPU física expuesta a este entorno; no se afirma compilación/renderizado real WebGL. La restauración del contexto perdido se resuelve de forma segura con Canvas si el contexto no puede volver a renderizar.
+
 # Addendum v6.2 — rama de revisión
 
 La fase II del Primer Nombre incorpora alcance de dos casillas con línea de visión; cada jefe anuncia su ataque con un texto propio. Canvas señala telegráficos en carmesí y WebGL dibuja un sigilo dinámico bajo los jefes.
