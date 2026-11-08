@@ -1,7 +1,5 @@
 # Addendum v6.4 — reliquias de eco y desenlace de la Catedral
 
-Estado: rama de revisión; no publicada ni fusionada en `main`.
-
 Las cuatro cámaras de v6.3 ahora permiten elegir entre conservar un recuerdo o tomar una reliquia única. Linterna: +15 cordura. Espejo: protección para la siguiente fase enemiga. Brújula: +2 lucidez. Campana: interrumpe a los enemigos visibles hasta a dos casillas; si no hay objetivo, no se consume. Espejo y Campana activan la respuesta enemiga; las reliquias inmediatas no.
 
 Conservar los cuatro recuerdos y alcanzar el final con 4 o más de Lucidez desbloquea «La Catedral recuerda». Esta ruta secreta prevalece si también se cumplen las condiciones de revelación o pacto; de lo contrario se conservan las prioridades previas. `echoChoices` y `relics` son campos opcionales dentro del esquema 16; importar una partida anterior los inicializa vacíos y no modifica su progreso.
