@@ -25,7 +25,7 @@ const server=http.createServer((req,res)=>{
   browser=await chromium.launch({headless:true,...(process.env.D404_CHROMIUM_PATH?{executablePath:process.env.D404_CHROMIUM_PATH}:{}),args:['--no-sandbox','--disable-dev-shm-usage','--enable-unsafe-swiftshader','--use-angle=swiftshader']});
   report.browser=browser.version();
   const context=await browser.newContext({viewport:{width:1440,height:1100},acceptDownloads:true});
-  const page=await context.newPage();
+  const page=await context.newPage();page.setDefaultTimeout(10000);page.setDefaultNavigationTimeout(30000);
   page.on('pageerror',error=>report.errors.push(String(error)));
   page.on('response',response=>{if(response.status()>=400)report.failedRequests.push(response.url()+' '+response.status());});
   await page.addInitScript(()=>localStorage.setItem('d404-presentation',JSON.stringify({film:true,quality:'economy'})));
@@ -100,4 +100,4 @@ const server=http.createServer((req,res)=>{
   assert.deepEqual(report.errors,[]);assert.deepEqual(report.failedRequests,[]);
   fs.writeFileSync(path.join(evidence,'browser-report.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));console.log('Evidence:',evidence);
  }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve));}
-})().catch(error=>{console.error(error);process.exitCode=1;});
+})().catch(error=>{console.error('::error::'+String(error.stack||error).replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A'));process.exitCode=1;});

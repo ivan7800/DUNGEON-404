@@ -13,5 +13,8 @@ s.floor=2;s.x=4;s.y=1;s.dir=1;assert(C.opportunities(s).some(o=>o.action==='inve
 s.x=3;s.y=11;assert(C.opportunities(s).some(o=>o.page==='lore'));
 s.floor=4;s.x=1;s.y=1;s.dir=3;assert(C.opportunities(s).some(o=>o.action==='search'));
 s.x=11;s.y=13;s.dir=1;assert(C.opportunities(s).some(o=>o.action==='interact'));
+const lore=C.createGame();lore.floor=2;lore.x=4;lore.y=1;lore.dir=1;
+assert(C.dispatch(lore,'interact').some(e=>e.text.includes('(U)')),'library text must point to its own manuscript action');
+lore.floor=3;assert(!C.dispatch(lore,'interact').some(e=>e.text.includes('(I)')),'later floors must not offer the first-floor-only investigation');
 s.dead=true;assert.deepEqual(C.opportunities(s),[]);
 console.log('v6.6 exploration: nearby clues, finite choices, secrets, exits, no spoilers at distance or turn costs PASS');

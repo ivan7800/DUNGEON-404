@@ -144,6 +144,12 @@
     '3,11':'Tres bocas cinceladas rodean una lápida: aquí puede practicarse el rito del silencio.',
     '9,13':'El confesionario está abierto. Detrás de la reja, un penitente todavía respira.'
   };
+  const DEPTH_LORES=Object.freeze({
+    2:{'5,1':'Un manuscrito flota sin mojarse. Descifra las mareas sin luna (U).','7,5':'Entre dos estantes hay un códice sujeto con hilo de cobre. Descífralo (U).','3,11':'La losa ofrece dos respuestas: sellar o escuchar. Conoce ambos manuscritos antes de decidir en el Códice.','9,13':'Miles de lenguas pronuncian una sola sílaba detrás de la reja. El Bibliotecario os espera.'},
+    3:{'5,1':'Una aguja de latón gira cuando pronunciáis un nombre. La piedra conserva las marcas de otras expediciones.','7,5':'Un bastón de ceniza descansa sobre una carta del cielo. Revisa el equipo de Ilyra en el Inventario.','3,11':'El sigilo se hunde bajo vuestros pies. Un conducto de luz recorre el muro hacia la reja del Archivo.','9,13':'Las páginas del último atril están en blanco. El Archivista busca un nombre para llenarlas.'},
+    4:{'5,1':'Cada nicho conserva una cavidad del tamaño de una boca. La compañía pasa en silencio.','7,5':'Las velas siguen calientes, pero la ceniza no deja huellas. Alguien acaba de retirarse.','3,11':'La runa del último nombre está junto a este sepulcro. Al fondo queda el custodio del umbral.','9,13':'El Primer Nombre respira al otro lado. La salida exige la runa y el silencio del custodio.'}
+  });
+  const loreAt=(s,pos)=>s.floor===1?LORES[pos]:DEPTH_LORES[s.floor]?.[pos];
   // One-shot narrative beats on each descent, reusing loreRead for old-save compatibility.
   const DESCENT_BEATS = Object.freeze({
     1:Object.freeze({'6,5':'Los pasos que os preceden se detienen cuando os detenéis. Al reanudar la marcha, se oye un quinto par de botas.','9,9':'Una campana suena bajo la piedra. Nadie recuerda haberla oído, pero todos conocen la melodía.'}),
@@ -607,8 +613,8 @@
       report(s,`Encuentras ${gear.label}. Equípalo desde los pertrechos.`,events,'loot');
     } else if(tile(x,y,s.floor)==='K'&&!s.key){
       s.key=true;report(s,'¡Has encontrado la llave de obsidiana!',events,'loot');
-    } else if(LORES[pos]&&!s.loreRead.includes(pos)){
-      s.loreRead.push(pos);report(s,LORES[pos],events,'lore');
+    } else if(loreAt(s,pos)&&!s.loreRead.includes(s.floor===1?pos:`${s.floor}:${pos}`)){
+      s.loreRead.push(s.floor===1?pos:`${s.floor}:${pos}`);report(s,loreAt(s,pos),events,'lore');
     } else report(s,'Avanzas entre ecos y humedad.',events,'move');
     const beat=DESCENT_BEATS[s.floor]?.[pos],beatId=`beat:${s.floor}:${pos}`;
     if(beat&&!s.loreRead.includes(beatId)){
@@ -663,7 +669,7 @@
           s.floor=2;s.x=1;s.y=1;s.dir=1;
           s.visited=s.visitedByFloor[2].length?s.visitedByFloor[2]:['1,1'];
           s.visitedByFloor[2]=s.visited;
-          report(s,'DESCENSO II: La Cripta Baja. Algo conoce vuestros nombres.',events,'victory');
+          report(s,'DESCENSO II: La Biblioteca Sumergida. Algo conoce vuestros nombres.',events,'victory');
         }
       }else if(s.floor===2){
         const king=s.monsters.some(m=>m.kind==='king'&&m.hp>0);
@@ -692,8 +698,8 @@
       }
     } else if(tile(x,y,s.floor)==='K'&&!s.key){
       s.key=true;report(s,'Recoges la llave de obsidiana.',events,'loot');
-    } else if(LORES[at(x,y)]){
-      report(s,LORES[at(x,y)],events,'lore');
+    } else if(loreAt(s,at(x,y))){
+      report(s,loreAt(s,at(x,y)),events,'lore');
     } else report(s,'No hay nada con lo que interactuar.',events);
   }
   function disarm(s,events,rng){
