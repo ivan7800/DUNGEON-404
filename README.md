@@ -4,7 +4,7 @@ Dungeon crawler por casillas y acciones: cuatro aventureros descienden por cated
 
 La campaña continúa la progresión y los sistemas de las versiones v4.2 y v4.3.
 
-Esta rama actualiza la interfaz con una estética de archivo analógico de terror cósmico de los ochenta, manteniendo intacta la presentación de la mazmorra. Consulta [RELEASE-REPORT.md](RELEASE-REPORT.md) para el alcance y las comprobaciones realizadas y pendientes.
+Esta versión actualiza la interfaz con una estética de archivo analógico de terror cósmico de los ochenta, manteniendo intacta la presentación de la mazmorra. Consulta [RELEASE-REPORT.md](RELEASE-REPORT.md) para el alcance y las comprobaciones realizadas y pendientes.
 
 ## Iniciar
 

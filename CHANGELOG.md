@@ -1,4 +1,4 @@
-# v6.5 — Interfaz de archivo analógico (rama)
+# v6.5 — Interfaz de archivo analógico
 
 - La interfaz adopta el lenguaje de una cinta de campo: tipografía monoespaciada, sintonía de señal, fósforo turquesa, ámbar y violeta, bordes de monitor y texturas de barrido muy suaves.
 - La identidad de la Catedral, las ilustraciones y la escena de mazmorra conservan sus colores y arte actuales; el tratamiento retro se limita a controles, paneles, diario y códice.
