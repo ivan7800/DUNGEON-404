@@ -1,10 +1,10 @@
-# DUNGEON 404 — La Catedral de la Marea · v6.0
+# DUNGEON 404 — La Catedral de la Marea · v6.1
 
 Dungeon crawler por casillas y acciones: cuatro aventureros descienden por catedrales enterradas bajo un océano cósmico. La campaña conserva sus cuatro profundidades, investigación, rituales, equipo, cordura, ocho secretos y tres finales.
 
 La campaña continúa la progresión y los sistemas de las versiones v4.2 y v4.3.
 
-Esta rama presenta la revisión v6.0. No se ha fusionado ni publicado en GitHub Pages. Consulta [RELEASE-REPORT.md](RELEASE-REPORT.md) para distinguir lo comprobado de los límites de la revisión.
+La versión v6.0 está publicada. Esta rama prepara v6.1; consulta [RELEASE-REPORT.md](RELEASE-REPORT.md) para el alcance y los límites verificados.
 
 ## Iniciar
 
@@ -38,6 +38,14 @@ Selecciona un personaje con 1–4 o su retrato. Cada personaje tiene una especia
 Los conjuros antiguos siguen disponibles en el desplegable, con sus costes y reglas anteriores. Una especialidad sin objetivo, sin maná o en recuperación no consume un turno.
 
 La barra bajo la escena muestra enemigos en línea de visión, vida, fase y ataques preparados. Los jefes preparan golpes fuertes; por debajo de la mitad de vida lo hacen con mayor frecuencia y fuerza. El Confesor pierde su armadura en fase II, el Bibliotecario aumenta el drenaje y el Archivista gana alcance. Interrumpir, congelar o romper la línea de visión son alternativas a recibir el golpe; la protección del grupo también ayuda.
+
+## Juramentos de progreso (v6.1)
+
+Al llegar al nivel 2, cada aventurero elige una vez en Inventario: Bastión (+6 PV máximos y +1 defensa) o Filo (+2 daño y un refuerzo adicional a su especialidad: bloqueo para Aldric, corte para Mara, escarcha para Ilyra, Santuario para Borin). Elegir no consume turno. Los guardados anteriores conservan el esquema 16 y pueden elegir cuando cumplan el requisito.
+
+## Altares de entrada (v6.1)
+
+Al entrar en cada profundidad, el altar de (1,1) ofrece una elección única: recuperar 12 de cordura o recoger una esencia. Puedes regresar antes de descender. La elección se guarda y no consume turno.
 
 ## Controles y accesibilidad
 

@@ -1,3 +1,13 @@
+# v6.1 — Juramentos de progreso (rama de revisión)
+
+- Dos elecciones permanentes al nivel 2 para cada personaje, integradas en Inventario.
+- Bastión añade supervivencia; Filo aumenta daño y la especialidad propia.
+- Cuatro altares de entrada, uno por profundidad, con elección única de cordura o esencia.
+- Campos opcionales compatibles con guardados de esquema 16; pruebas de elección, exclusividad y migración.
+- Pendiente revisión WebGL y táctil físico, exportación JSON descargada e importación de archivo real.
+
+---
+
 # v6.0 — La Catedral de la Marea (rama de revisión)
 
 - Identidad medieval cósmica: sello propio, cuatro retratos y once ilustraciones originales de criaturas para Canvas.

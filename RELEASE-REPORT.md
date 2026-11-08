@@ -1,3 +1,9 @@
+# Addendum v6.1 — revisión
+
+La rama v6.1 incorpora juramentos al nivel 2 y altares de entrada con decisiones de recurso. Conservar el esquema 16 permite importar guardados v6.0; el nuevo campo `shrines` se inicializa vacío y `path` es opcional. La revisión WebGL en GPU, exportación de JSON descargado e importación de archivo y móvil físico continúan pendientes. Los resultados de comprobación se consignarán en el PR.
+
+---
+
 # v6.0 — La Catedral de la Marea · Informe de revisión
 
 Fecha: 8 de noviembre de 2026. Rama: `codex/cathedral-of-the-drowned-star`.
