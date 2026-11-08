@@ -448,6 +448,30 @@
         danger:!m.frozen&&!m.staggered&&!!m.telegraph&&(d===1||ranged)};
     });
   }
+  // Contextual hints use the same positions and completion flags as the actions.
+  // They reveal opportunities within reach, without exposing the unexplored map.
+  function opportunities(s){
+    if(s.dead||s.won)return [];
+    const [dx,dy]=DIRS[s.dir],here=at(s.x,s.y),ahead=at(s.x+dx,s.y+dy),out=[];
+    if(s.x===1&&s.y===1&&!s.shrines.includes(s.floor))out.push({page:'quest',label:'Altar de entrada',detail:'Elige cordura o esencia en Juramento.'});
+    const echo=echoAt(s);
+    if(echo&&!s.echoes.includes(`${s.floor}:${here}`))out.push({page:'quest',label:echo.name,detail:'Recuerdo o reliquia: decide en Juramento.'});
+    if(s.floor===1){
+      const clue=COSMIC_CLUES[here]||COSMIC_CLUES[ahead],tome=FORBIDDEN_TOMES[here]||FORBIDDEN_TOMES[ahead];
+      if(clue&&!s.knowledge.includes(clue.id))out.push({action:'investigate',label:'Leer inscripción',detail:`${clue.title} · cordura −${clue.cost}.`});
+      if(tome&&!s.tomesRead.includes(tome.id))out.push({action:'readTome',label:'Abrir tomo',detail:`Cordura −${tome.sanityCost}; lucidez +${tome.lucidityGain}.`});
+      if(here==='3,11'&&!s.ritualSealed)out.push({action:'ritual',label:'Rito del silencio',detail:'Requiere los testimonios de los custodios y del sello. Recupera 18 de cordura y 2 esencias.'});
+    }
+    if(s.floor===2){
+      const manuscript=DROWNED_TEXTS[here]||DROWNED_TEXTS[ahead];
+      if(manuscript&&!s.drownedClues.includes(manuscript.id))out.push({action:'investigateDrowned',label:'Descifrar manuscrito',detail:`${manuscript.title} · cordura −${manuscript.cost}.`});
+      if(here==='3,11'&&s.drownedRitual==='none')out.push({page:'lore',label:'Responder a la Marea',detail:'Sellar o escuchar: consulta las consecuencias en Códice.'});
+    }
+    const secretId=`${s.floor}:${ahead}`;
+    if(SECRETS[secretId]&&!s.secretsFound.includes(secretId))out.push({action:'search',label:'Examinar mampostería',detail:'Una juntura interrumpe el relieve de la pared.'});
+    if(tile(s.x+dx,s.y+dy,s.floor)==='X')out.push({action:'interact',label:s.floor===4?'Abrir último umbral':'Descender',detail:'Necesitas la reliquia de la zona y derrotar a su custodio.'});
+    return out;
+  }
   function enemyTurn(s, events, rng) {
     if(s.won||s.dead) return;
     s.turn++;
@@ -881,6 +905,12 @@
     return events;
   }
   function validGame(s){
+    // Imported JSON is untrusted. Check containers before reading nested fields.
+    if(!s||typeof s!=='object'||Array.isArray(s))return false;
+    if(!Array.isArray(s.party)||s.party.length!==4||s.party.some(p=>!p||typeof p!=='object'||!Object.hasOwn(SPECIALTIES,p.role)))return false;
+    if(!Array.isArray(s.monsters)||s.monsters.some(m=>!m||typeof m!=='object'))return false;
+    if(!Array.isArray(s.loreRead)||s.loreRead.length>100||s.loreRead.some(v=>typeof v!=='string'||v.length>100))return false;
+    if(!Array.isArray(s.trapsTriggered)||s.trapsTriggered.length>12||s.trapsTriggered.some(v=>typeof v!=='string'||!/^([1-4]):\d+,\d+$/.test(v)))return false;
     if(s.ending!==undefined && s.ending!==null && (!Object.hasOwn(ENDINGS,s.ending)||!s.won))return false;
     if(s.drownedRitual!==undefined&&!['none','seal','listen'].includes(s.drownedRitual))return false;
     if(s.drownedClues!==undefined&&(!Array.isArray(s.drownedClues)||s.drownedClues.length>2||new Set(s.drownedClues).size!==s.drownedClues.length||s.drownedClues.some(id=>!['tide','bell'].includes(id))))return false;
@@ -906,8 +936,8 @@
       ['equippedWeapon','equippedArmor'].every(k=>{const equipped=s.party.map(h=>h[k]).filter(Boolean);return new Set(equipped).size===equipped.length;})&&
       Array.isArray(s.gearFound)&&s.gearFound.length<=6&&
       typeof s.gateOpen==='boolean'&&typeof s.labyrinthGateOpen==='boolean'&&typeof s.voidHeart==='boolean'&&typeof s.finalRune==='boolean'&&Array.isArray(s.disarmedTraps)&&s.disarmedTraps.length<=12&&
-      s.disarmedTraps.every(k=>typeof k==='string'&&/^[123]:\d+,\d+$/.test(k))&&
-      s.visitedByFloor&&[1,2,3,4].every(k=>Array.isArray(s.visitedByFloor[k]))&&
+      s.disarmedTraps.every(k=>typeof k==='string'&&/^[1-4]:\d+,\d+$/.test(k))&&
+      !!s.visitedByFloor&&[1,2,3,4].every(k=>Array.isArray(s.visitedByFloor[k])&&s.visitedByFloor[k].length<=WIDTH*HEIGHT&&s.visitedByFloor[k].every(v=>typeof v==='string'&&/^\d+,\d+$/.test(v)))&&
       typeof s.won==='boolean'&&typeof s.dead==='boolean'&&natural(s.ward,3)&&(s.guard===null||natural(s.guard,3))&&
       Array.isArray(s.party)&&s.party.length===4&&s.party.every(p=>p&&typeof p.name==='string'&&p.name.length<50&&
         typeof p.role==='string'&&typeof p.weapon==='string'&&typeof p.armor==='string'&&
@@ -925,7 +955,11 @@
       Array.isArray(s.messages)&&s.messages.length<=50&&s.messages.every(t=>typeof t==='string'&&t.length<500);
   }
   function importSave(raw){
-    if(!raw||typeof raw!=='object')return null;
+    if(!raw||typeof raw!=='object'||Array.isArray(raw))return null;
+    if(raw.schema!==undefined&&(!Number.isInteger(raw.schema)||raw.schema<3||raw.schema>VERSION))return null;
+    if(!Array.isArray(raw.monsters)||raw.monsters.some(m=>!m||typeof m!=='object'||typeof m.name!=='string'))return null;
+    if(!Array.isArray(raw.party)||raw.party.length!==4||raw.party.some(p=>!p||typeof p!=='object'))return null;
+    if(!Array.isArray(raw.visited))return null;
     const previous=raw.schema||3;
     const s={...raw,schema:VERSION,shrines:raw.shrines===undefined?[]:raw.shrines,echoes:raw.echoes===undefined?[]:raw.echoes,echoChoices:raw.echoChoices===undefined?[]:raw.echoChoices,relics:raw.relics===undefined?[]:raw.relics,
       ending:raw.ending===undefined?(raw.won?'silence':null):raw.ending,
@@ -992,5 +1026,5 @@
     return s;
   }
   return {VERSION,SAVE_KEY,V15_SAVE_KEY,V14_SAVE_KEY,V13_SAVE_KEY,SECRETS,V12_SAVE_KEY,V11_SAVE_KEY,V10_SAVE_KEY,V9_SAVE_KEY,V8_SAVE_KEY,V7_SAVE_KEY,PREVIOUS_SAVE_KEY,V5_SAVE_KEY,LEGACY_SAVE_KEY,V4_SAVE_KEY,LEVEL,LOWER,LABYRINTH,ABYSS,COSMIC_CLUES,FORBIDDEN_TOMES,DROWNED_TEXTS,COSMIC_ENEMIES,ENDINGS,resolveEnding,WIDTH,HEIGHT,DIRS,LORES,TRAPS,GEAR,BESTIARY,PORTCULLIS,PRESSURE_PLATE,gateAt,
-    SPECIALTIES,PATHS,ECHO_SITES,RELICS,echoAt,threats,tile,wallAt,passable,createGame,monsterAt,dispatch,validGame,importSave};
+    SPECIALTIES,PATHS,ECHO_SITES,RELICS,echoAt,threats,opportunities,tile,wallAt,passable,createGame,monsterAt,dispatch,validGame,importSave};
 });

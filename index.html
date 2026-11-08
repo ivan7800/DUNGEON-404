@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#071517">
   <meta name="description" content="DUNGEON 404: dungeon crawler original en primera persona, gratuito, offline y jugable en navegador.">
-  <title>DUNGEON 404 · La Catedral de la Marea · v6.5</title>
-  <link rel="stylesheet" href="style.css?v=65">
+  <title>DUNGEON 404 · La Catedral de la Marea · v6.6</title>
+  <link rel="stylesheet" href="style.css?v=66">
 </head>
 <body>
 <main class="shell">
@@ -22,6 +22,11 @@
     <p>El mar cubrió las catedrales. Algo siguió rezando debajo.</p>
     <span class="ornament" aria-hidden="true">✥</span>
   </section>
+  <nav class="expedition-bar" aria-label="Accesos de la expedición">
+    <ol class="depth-track" aria-label="Progreso de la campaña"><li data-depth="1" aria-current="step">I <span>CRIPTA</span></li><li data-depth="2">II <span>BIBLIOTECA</span></li><li data-depth="3">III <span>LABERINTO</span></li><li data-depth="4">IV <span>OSARIO</span></li></ol>
+    <div class="quick-tools"><button type="button" id="quick-sound" aria-pressed="false">▶ SONIDO</button><button type="button" id="quick-save">GUARDAR</button><button type="button" id="quick-settings">PARTIDA Y AJUSTES</button></div>
+    <p id="quick-supplies" role="status">3 POCIONES · 2 ESENCIAS · 1 PERGAMINO</p>
+  </nav>
   <div class="game">
     <section class="main-column" aria-label="Mazmorra">
       <div class="top-status"><span>EL DESCENSO · POR TURNOS</span><span id="location">PROFUNDIDAD I · ESTE</span></div>
@@ -31,7 +36,7 @@
         <div class="view-decor view-decor-br" aria-hidden="true"></div>
         <div class="hud"><span id="area">LA CRIPTA DE LOS SUSURROS</span><span id="message" role="status" aria-live="polite">La piedra está húmeda.</span></div>
       </div>
-      <div id="encounter-intent" role="status" class="encounter-intent" aria-live="polite"></div><section class="control-panel" aria-label="Controles del juego">
+      <div id="encounter-intent" role="status" class="encounter-intent" aria-live="polite"></div><section id="context-actions" class="context-actions" aria-label="Oportunidades cercanas" hidden></section><section class="control-panel" aria-label="Controles del juego">
         <div class="control-heading">CADA PASO TIENE UN PRECIO · LAS AMENAZAS ESPERAN TU ACCIÓN</div><div class="controls travel">
           <button type="button" aria-label="Girar a la izquierda · A" data-action="left" title="A: girar a la izquierda"><span>↶</span><small>GIRAR</small></button>
           <button type="button" aria-label="Paso lateral izquierdo · Q" data-action="strafeLeft" title="Q: paso a la izquierda"><span>←</span><small>LATERAL</small></button>
@@ -119,13 +124,13 @@
         </div>
         <p class="system-hint">Guarda en este navegador o exporta un JSON para pasar tu partida a otro equipo. No se envían archivos a ningún servidor.</p>
       </section>
-    </div></section><footer>DUNGEON 404 · LA CATEDRAL DE LA MAREA · v6.5 · I. ROIG</footer></main>
-<script src="engine.js?v=65" defer></script>
-<script src="renderer.js?v=65" defer></script>
-<script src="renderer3d.js?v=65" defer></script>
-<script src="audio.js?v=65" defer></script>
-<script src="glb-model.js?v=65" defer></script>
-<script src="interface.js?v=65" defer></script><script src="game.js?v=65" defer></script>
-<script src="presentation.js?v=65" defer></script>
+    </div></section><footer>DUNGEON 404 · LA CATEDRAL DE LA MAREA · v6.6 · I. ROIG</footer></main>
+<script src="engine.js?v=66" defer></script>
+<script src="renderer.js?v=66" defer></script>
+<script src="renderer3d.js?v=66" defer></script>
+<script src="audio.js?v=66" defer></script>
+<script src="glb-model.js?v=66" defer></script>
+<script src="interface.js?v=66" defer></script><script src="game.js?v=66" defer></script>
+<script src="presentation.js?v=66" defer></script>
 </body>
 </html>

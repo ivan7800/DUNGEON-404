@@ -17,6 +17,7 @@ function createCanvas(){
 function initRenderer(mode='auto'){
  // Canvas contexts cannot switch from WebGL to 2D on the same element.
  // A fresh canvas is required, including when recovering from shader errors.
+ renderer?.dispose?.();
  const canvas=createCanvas();
  let fallback=false;
  try{
@@ -78,9 +79,10 @@ function updateAudioFloor(){
  }
 
  if(state.floor!==lastAudioFloor){lastAudioFloor=state.floor;soundtrack?.updateFloor(lastAudioFloor);}
- const nearby=state.monsters.filter(m=>(m.floor||1)===state.floor&&m.hp>0&&Math.abs(m.x-state.x)+Math.abs(m.y-state.y)<=4);
+ const visibleNames=new Set(core.threats(state).map(t=>t.name));
+ const nearby=state.dead||state.won?[]:state.monsters.filter(m=>(m.floor||1)===state.floor&&m.hp>0&&visibleNames.has(m.name));
  const looming=nearby.find(m=>['warden','king','archivist','firstname'].includes(m.kind));
- if(looming&&!announcedBosses.has(looming.kind)){announcedBosses.add(looming.kind);note('El aire se corta. '+looming.name+' está cerca. Prepara al grupo antes de avanzar.');}
+ if(looming&&!announcedBosses.has(looming.kind)){announcedBosses.add(looming.kind);note('El aire se corta. '+looming.name+' está cerca. Prepara al grupo antes de avanzar.');beep('boss-roar');}
  const boss=nearby.some(m=>['warden','king','archivist','firstname'].includes(m.kind));
  const threat=boss?'boss':nearby.length?'combat':'explore';
  if(threat!==lastThreatMode){lastThreatMode=threat;soundtrack?.updateThreat(threat);}
@@ -97,6 +99,8 @@ function refreshAudioControls(){
  $('effects-value').textContent=$('effects-volume').value+'%';
  $('ambience-value').textContent=$('ambience-volume').value+'%';
  $('audio-status').textContent=active?soundtrack.getStatus()+' · Profundidad '+state.floor:'Pulsa activar para comenzar. Música dinámica, paisajes sonoros y 20 efectos.';
+ $('quick-sound').textContent=active?'Ⅱ SILENCIAR':'▶ SONIDO';
+ $('quick-sound').setAttribute('aria-pressed',String(active));
 }
 function play(action){
   if(['drownedSeal','drownedListen'].includes(action)&&state.floor===2&&state.drownedRitual==='none'&&state.x===3&&state.y===11){
@@ -106,8 +110,14 @@ function play(action){
   const events=core.dispatch(state,action);
   const important=[...events].reverse().find(e=>['hurt','attack','spell','heal','loot','victory','defeat','level','frost','ward'].includes(e.effect));
   if(important){effect=important.effect;effectUntil=performance.now()+420;}
-  if(events.length)beep((important||events.at(-1)).effect);
+  if(events.length){
+    const cue=important||events.at(-1);
+    beep(cue.effect==='loot'&&cue.text.includes('RELIQUIA OCULTA')?'secret':cue.effect);
+    const strike=events.find(e=>['attack','spell','frost'].includes(e.effect));
+    if(strike&&cue.effect==='hurt')beep(strike.effect);
+  }
   updateAudioFloor();
+  refreshAudioControls();
   renderUI();
   safeWorld(state,performance.now(),effect);
   renderer.renderMap(state,showMap);
@@ -138,6 +148,8 @@ function renderUI(){
   $('secrets-status').textContent=`SECRETOS DESCUBIERTOS: ${state.secretsFound.length}/8 · Pulsa E frente a paredes sospechosas.`;
   $('secrets-journal').replaceChildren(...state.secretsFound.map(id=>{const secret=core.SECRETS[id];return element('li','',secret.name+' — '+secret.lore);}));
   $('area').textContent=['','LA CRIPTA DE LOS SUSURROS','LA BIBLIOTECA SUMERGIDA · MAREA NEGRA','EL LABERINTO OLVIDADO · ARCHIVO NEGRO','EL OSARIO DEL PRIMER NOMBRE'][state.floor];
+  $('quick-supplies').textContent=`${state.potions} POCIONES · ${state.ether} ESENCIAS · ${state.scrolls} PERGAMINOS`;
+  document.querySelectorAll('[data-depth]').forEach(node=>{const depth=Number(node.dataset.depth);node.dataset.state=depth<state.floor||state.won?'complete':depth===state.floor?'current':'unknown';if(depth===state.floor)node.setAttribute('aria-current','step');else node.removeAttribute('aria-current');});
   $('message').textContent=state.messages[0]||'';
   const sanity=Number.isInteger(state.sanity)?state.sanity:100;
   $('sanity-value').textContent=`${sanity}/100`;$('sanity-fill').style.width=sanity+'%';
@@ -167,6 +179,15 @@ function renderUI(){
   const threats=core.threats(state);const intent=$('encounter-intent');
   intent.dataset.danger=String(threats.some(t=>t.danger));
   intent.textContent=threats.length?threats.map(t=>t.name+' · '+t.hp+'/'+t.max+' PV · '+(t.phase===2?'FASE II · ':'')+t.text).join(' | '):'Sin amenaza en línea de visión. Explora, busca relieves y lee las inscripciones.';
+  const options=core.opportunities(state),context=$('context-actions');context.hidden=!options.length;
+  context.replaceChildren(...options.map(option=>{
+    const row=element('div','context-opportunity'),button=element('button','',option.label);
+    button.type='button';button.addEventListener('click',()=>{
+      if(option.action)play(option.action);
+      else{const tab=$('tab-'+option.page);tab.click();tab.focus({preventScroll:true});$('page-'+option.page).scrollIntoView({behavior:'auto',block:'nearest'});}
+    });
+    row.append(button,element('span','',option.detail));return row;
+  }));
 
   $('log').replaceChildren(...state.messages.slice(0,12).map(t=>element('div','',t)));
   const goals=state.floor===1?[
@@ -251,9 +272,10 @@ function load(){
     const imported=core.importSave(JSON.parse(raw||old));
     if(!imported)throw Error('missing or invalid save');
     state=imported;
-    note(old?'Partida anterior importada. Guárdala para migrarla a v1.6.':'Partida recuperada correctamente.');
+    announcedBosses.clear();
+    note(old?'Partida anterior importada. Guarda para conservar la migración.':'Partida recuperada correctamente.');
   }catch(_){note('No se ha encontrado una partida válida.');}
-  updateAudioFloor();renderUI();safeWorld(state,performance.now());renderer.renderMap(state,showMap);
+  updateAudioFloor();refreshAudioControls();renderUI();safeWorld(state,performance.now());renderer.renderMap(state,showMap);
 }
 // Save files are portable between file://, local servers and GitHub Pages.
 // Never execute imported content or write it to localStorage without explicit Save.
@@ -282,14 +304,14 @@ async function importFile(file){
     const imported=core.importSave(data.game);
     if(!imported||!core.validGame(imported))throw Error('invalid save');
     if(!window.confirm(`¿Importar partida de la profundidad ${imported.floor}, turno ${imported.turn}? La sesión actual se sustituirá, pero tu guardado local seguirá intacto hasta que pulses GUARDAR.`))return false;
-    state=imported;note('Partida importada. Pulsa GUARDAR para conservarla en este navegador.');
-    updateAudioFloor();renderUI();safeWorld(state,performance.now());renderer.renderMap(state,showMap);
+    state=imported;announcedBosses.clear();note('Partida importada. Pulsa GUARDAR para conservarla en este navegador.');
+    updateAudioFloor();refreshAudioControls();renderUI();safeWorld(state,performance.now());renderer.renderMap(state,showMap);
     return true;
   }catch(_){note('Archivo no válido o incompatible. La partida actual sigue intacta.');renderUI();return false;}
 }
 function reset(){
   if(!window.confirm('¿Iniciar otra aventura? La partida guardada seguirá disponible.'))return;
-  state=core.createGame();updateAudioFloor();renderUI();safeWorld(state,performance.now());renderer.renderMap(state,showMap);
+  state=core.createGame();announcedBosses.clear();updateAudioFloor();refreshAudioControls();renderUI();safeWorld(state,performance.now());renderer.renderMap(state,showMap);
 }
 $('graphics-mode').addEventListener('change',event=>{
  initRenderer(event.target.value);
@@ -304,6 +326,9 @@ $('load').addEventListener('click',load);
 $('reset').addEventListener('click',reset);
 $('toggle-map').addEventListener('click',()=>{showMap=!showMap;$('toggle-map').textContent=showMap?'OCULTAR · M':'MOSTRAR · M';renderer.renderMap(state,showMap);});
 $('sound').addEventListener('click',()=>{soundtrack?.setEnabled(!soundtrack.settings.enabled);refreshAudioControls();});
+$('quick-sound').addEventListener('click',()=>$('sound').click());
+$('quick-save').addEventListener('click',save);
+$('quick-settings').addEventListener('click',()=>{$('tab-settings').click();$('tab-settings').focus();$('page-settings').scrollIntoView({behavior:'auto',block:'nearest'});});
 $('music-volume').addEventListener('input',e=>{soundtrack?.setMusicVolume(Number(e.target.value)/100);refreshAudioControls();});
 $('effects-volume').addEventListener('input',e=>{soundtrack?.setEffectsVolume(Number(e.target.value)/100);refreshAudioControls();});
 $('ambience-volume').addEventListener('input',e=>{soundtrack?.setAmbienceVolume(Number(e.target.value)/100);refreshAudioControls();});

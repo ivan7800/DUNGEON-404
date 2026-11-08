@@ -1,3 +1,13 @@
+# v6.6 — Relieves y señales de la Catedral
+
+- Cuatro relieves vectoriales originales en las paredes Canvas: custodio sepultado, libros inundados, astrolabio y osario. Bóvedas y trazos de ataque/conjuro más legibles; alerta de fase de jefe limitada a criaturas visibles. WebGL conserva sus modelos y arquitectura.
+- Progreso de las cuatro profundidades y accesos directos a sonido, guardado, recursos y ajustes. Oportunidades cercanas con costes de lectura y enlaces a las decisiones de altar/eco.
+- Corrige pistas musicales residuales al interrumpir fundidos y limita a ocho los efectos simultáneos. Los cambios de volumen afectan a las voces activas. La música de peligro respeta la línea de visión.
+- Rechaza guardados mal formados sin excepciones; admite correctamente las trampas desactivadas de profundidad IV. Conserva esquema/clave 16 y migraciones.
+- Libera programas y buffers al cambiar motor; recuperación segura tras pérdida/restauración del contexto. El laboratorio crea un lienzo limpio para Canvas y su captura PNG redibuja el frame.
+- Corrige referencias antiguas a tres profundidades/destinos; reinicia avisos de jefe al cargar o iniciar otra partida.
+- Cuatro pruebas de regresión nuevas, auditoría Chromium por HTTP y job de Actions con capturas. Consulta el informe para resultados reales y pendientes.
+
 # v6.5 — Interfaz de archivo analógico
 
 - La interfaz adopta el lenguaje de una cinta de campo: tipografía monoespaciada, sintonía de señal, fósforo turquesa, ámbar y violeta, bordes de monitor y texturas de barrido muy suaves.

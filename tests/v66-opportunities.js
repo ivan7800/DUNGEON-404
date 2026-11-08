@@ -1,0 +1,17 @@
+'use strict';
+const assert=require('node:assert/strict'),C=require('../engine.js');
+const s=C.createGame(),before=JSON.stringify(s);
+assert(C.opportunities(s).some(o=>o.page==='quest'));assert.equal(JSON.stringify(s),before,'hints must not mutate the campaign');
+C.dispatch(s,'shrine:ether');assert.equal(C.opportunities(s).length,0);
+s.x=4;s.y=1;s.dir=1;
+assert.deepEqual(C.opportunities(s).map(o=>o.action),['investigate','readTome']);
+const turn=s.turn;C.dispatch(s,'investigate');C.dispatch(s,'readTome');
+assert.equal(C.opportunities(s).length,0);assert.equal(s.turn,turn);
+s.x=6;s.y=5;assert(C.opportunities(s).some(o=>o.label==='El quinto paso'));
+C.dispatch(s,'echo:memory');assert(!C.opportunities(s).some(o=>o.label==='El quinto paso'));
+s.floor=2;s.x=4;s.y=1;s.dir=1;assert(C.opportunities(s).some(o=>o.action==='investigateDrowned'));
+s.x=3;s.y=11;assert(C.opportunities(s).some(o=>o.page==='lore'));
+s.floor=4;s.x=1;s.y=1;s.dir=3;assert(C.opportunities(s).some(o=>o.action==='search'));
+s.x=11;s.y=13;s.dir=1;assert(C.opportunities(s).some(o=>o.action==='interact'));
+s.dead=true;assert.deepEqual(C.opportunities(s),[]);
+console.log('v6.6 exploration: nearby clues, finite choices, secrets, exits, no spoilers at distance or turn costs PASS');

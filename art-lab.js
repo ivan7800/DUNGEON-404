@@ -32,12 +32,17 @@ function placeCreature(){
  const names={crawler:'Carroñero',specter:'Espectro',warden:'Guardián del Umbral',drowned:'Ahogado del Umbral',tideborn:'Larva de la Marea Negra',librarian:'Bibliotecario de las Mil Lenguas',archivist:'Archivista Vacío',firstname:'El Primer Nombre'};
  state.monsters=[{...target,floor:state.floor,hp:999,max:999,name:names[kind],damage:0,kind}];
 }
-function start(){const old=$('scene'),canvas=document.createElement('canvas');canvas.id='scene';canvas.width=960;canvas.height=600;old.replaceWith(canvas);
+function start(){renderer?.dispose?.();const old=$('scene'),canvas=document.createElement('canvas');canvas.id='scene';canvas.width=960;canvas.height=600;canvas.dataset.capture='true';canvas.setAttribute('aria-label','Escena del laboratorio visual');old.replaceWith(canvas);
  const requested=$('mode').value;failure='';
  try{renderer=(requested==='canvas'?window.DungeonRenderer:window.Dungeon3DRenderer).createRenderer(canvas,$('map'),core);
    active=String(renderer.backend||'').includes('WebGL')?'webgl':'canvas';
    if(requested==='webgl'&&active==='canvas')failure='No se pudo crear WebGL. Se utiliza Canvas 2.5D.';
- }catch(error){failure='Error WebGL: '+String(error.message||error);renderer=window.DungeonRenderer.createRenderer(canvas,$('map'),core);active='canvas';}
+ }catch(error){
+   failure='Error WebGL: '+String(error.message||error);
+   const fallback=document.createElement('canvas');fallback.id='scene';fallback.width=960;fallback.height=600;
+   fallback.setAttribute('aria-label','Escena del laboratorio visual en Canvas');canvas.replaceWith(fallback);
+   renderer=window.DungeonRenderer.createRenderer(fallback,$('map'),core);active='canvas';
+ }
  updateStatus();
 }
 function updateStatus(){
@@ -51,7 +56,7 @@ function step(action){const dir=core.DIRS[state.dir],left=[dir[1],-dir[0]];
  const x=state.x+move[0],y=state.y+move[1];if(core.tile(x,y,state.floor)!=='#'&&!core.gateAt(x,y,state.floor)&&core.tile(x,y,state.floor)!=='X'){state.x=x;state.y=y;}}
  placeCreature();updateStatus();
 }
-function frame(t){try{const visualTime=animationEnabled?t:0;renderer.renderWorld(state,visualTime,animationEnabled&&t<attackUntil?'attack':'');last=t;}catch(error){failure='Fallo durante el render: '+String(error.message||error);$('mode').value='canvas';start();}requestAnimationFrame(frame);}
+function frame(t){if(document.hidden||t-last<33){requestAnimationFrame(frame);return;}try{const visualTime=animationEnabled?t:0;renderer.renderWorld(state,visualTime,animationEnabled&&t<attackUntil?'attack':'');last=t;}catch(error){failure='Fallo durante el render: '+String(error.message||error);$('mode').value='canvas';start();}requestAnimationFrame(frame);}
 async function refreshGLB(){
  state.studioGlb=$('glb').checked;
  if(state.studioGlb){
@@ -69,6 +74,6 @@ $('floor').addEventListener('change',()=>{resetFloor();start();});$('mode').addE
 document.querySelectorAll('[data-move]').forEach(b=>b.addEventListener('click',()=>step(b.dataset.move)));
 document.addEventListener('keydown',e=>{if(['SELECT','INPUT','BUTTON'].includes(document.activeElement?.tagName))return;
  const m={w:'forward',s:'back',a:'left',d:'right',q:'strafeLeft',e:'strafeRight'}[e.key.toLowerCase()];if(m){e.preventDefault();step(m);}});
-$('snapshot').addEventListener('click',()=>{try{const a=document.createElement('a');a.download='dungeon404-v39-planta-'+state.floor+'-'+active+'.png';a.href=$('scene').toDataURL('image/png');a.click();}catch(error){$('status').textContent='No se pudo exportar PNG: '+error.message;}});
+$('snapshot').addEventListener('click',()=>{try{const a=document.createElement('a');a.download='dungeon404-v39-planta-'+state.floor+'-'+active+'.png';renderer.renderWorld(state,animationEnabled?performance.now():0,'');a.href=$('scene').toDataURL('image/png');a.click();}catch(error){$('status').textContent='No se pudo exportar PNG: '+error.message;}});
 resetFloor();start();requestAnimationFrame(frame);
 })();

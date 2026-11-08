@@ -1,9 +1,9 @@
 /* DUNGEON 404 v4.4 — The Unspeakable Horror. Offline WebGL; no external runtime. */
 (function(root){'use strict';
 function createRenderer(canvas,mapCanvas,core){
- const mapRenderer=root.DungeonRenderer.createRenderer(Object.assign(document.createElement('canvas'),{width:960,height:600}),mapCanvas,core);
  const gl=canvas.getContext('webgl',{alpha:false,antialias:true,preserveDrawingBuffer:canvas.dataset?.capture==='true'});
  if(!gl) return root.DungeonRenderer.createRenderer(canvas,mapCanvas,core);
+ const mapRenderer=root.DungeonRenderer.createRenderer(Object.assign(document.createElement('canvas'),{width:960,height:600}),mapCanvas,core);
  const vs=`attribute vec3 p;attribute vec3 n;attribute vec2 uv;attribute float mat;uniform mat4 projection;uniform mat4 view;varying vec3 world;varying vec3 normal;varying vec2 tex;varying float material;void main(){world=p;normal=n;tex=uv;material=mat;gl_Position=projection*view*vec4(p,1.);}`;
  const fs=`precision highp float;varying vec3 world;varying vec3 normal;varying vec2 tex;varying float material;uniform vec3 eye;uniform float tick;uniform float floorId;uniform vec3 lightPos[5];uniform float impact;uniform float dread;
  float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
@@ -72,15 +72,33 @@ function createRenderer(canvas,mapCanvas,core){
  if(material>9.5&&material<10.5)color=base*(1.1+.2*sin(tick*.013+world.y*11.));
  if(material>15.5&&material<16.5)color=base*(.85+.35*sin(tick*.004+world.x*8.));if(material>17.5&&material<18.5)color=base*(1.1+.18*sin(tick*.004));gl_FragColor=vec4(color,1.);}`;
  function compile(type,source){const sh=gl.createShader(type);gl.shaderSource(sh,source);gl.compileShader(sh);if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS)){const message=gl.getShaderInfoLog(sh)||'Shader compilation failed';gl.deleteShader?.(sh);throw Error(message);}return sh;}
- const program=gl.createProgram();gl.attachShader(program,compile(gl.VERTEX_SHADER,vs));gl.attachShader(program,compile(gl.FRAGMENT_SHADER,fs));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program)||'Shader program failed to link');gl.useProgram(program);
+ const program=gl.createProgram(),shaders=[];
+ try{
+  for(const [type,source] of [[gl.VERTEX_SHADER,vs],[gl.FRAGMENT_SHADER,fs]]){const shader=compile(type,source);shaders.push(shader);gl.attachShader(program,shader);}
+  gl.linkProgram(program);
+  if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program)||'Shader program failed to link');
+  gl.useProgram(program);
+ }catch(error){gl.deleteProgram?.(program);gl.getExtension?.('WEBGL_lose_context')?.loseContext();throw error;}
+ finally{for(const shader of shaders)gl.deleteShader?.(shader);}
  const attrs=['p','n','uv','mat'].map(n=>gl.getAttribLocation(program,n));const loc=n=>gl.getUniformLocation(program,n);const projLoc=loc('projection'),viewLoc=loc('view'),eyeLoc=loc('eye'),tickLoc=loc('tick'),floorLoc=loc('floorId'),lightsLoc=loc('lightPos[0]'),impactLoc=loc('impact'),dreadLoc=loc('dread');
  const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);const stride=9*4;attrs.forEach((a,i)=>{gl.enableVertexAttribArray(a);gl.vertexAttribPointer(a,[3,3,2,1][i],gl.FLOAT,false,stride,[0,3,6,8][i]*4);});
  gl.enable(gl.DEPTH_TEST); // Double-sided corridor surfaces.
  gl.disable(gl.CULL_FACE);
  gl.clearColor(.022,.033,.046,1);
  let staticFloor=0,staticData=[];const gateTransitions=new Map();let contextLost=false;
- canvas.addEventListener?.('webglcontextlost',e=>{e.preventDefault?.();contextLost=true;});
- canvas.addEventListener?.('webglcontextrestored',()=>{contextLost=false;});
+ const onContextLost=e=>{e.preventDefault?.();contextLost=true;};
+ // Restored contexts have lost every program and buffer; let the controller rebuild safely.
+ const onContextRestored=()=>{contextLost=true;};
+ canvas.addEventListener?.('webglcontextlost',onContextLost);
+ canvas.addEventListener?.('webglcontextrestored',onContextRestored);
+ let disposed=false;
+ function dispose(){
+  if(disposed)return;disposed=true;contextLost=true;
+  canvas.removeEventListener?.('webglcontextlost',onContextLost);
+  canvas.removeEventListener?.('webglcontextrestored',onContextRestored);
+  gl.deleteBuffer?.(buffer);gl.deleteProgram?.(program);
+  gl.getExtension?.('WEBGL_lose_context')?.loseContext();
+ }
  const put=(arr,p,n,uv,m)=>arr.push(...p,...n,...uv,m);
  function quad(arr,a,b,c,d,normal,mat=0){put(arr,a,normal,[0,0],mat);put(arr,b,normal,[1,0],mat);put(arr,c,normal,[1,1],mat);put(arr,a,normal,[0,0],mat);put(arr,c,normal,[1,1],mat);put(arr,d,normal,[0,1],mat);}
  function floorDisc(arr,x,y,z,rx,rz,mat,segments=12){
@@ -809,7 +827,7 @@ function createRenderer(canvas,mapCanvas,core){
   gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(scene),gl.DYNAMIC_DRAW);gl.drawArrays(gl.TRIANGLES,0,scene.length/9);
   const error=gl.getError?.();if(error&&error!==gl.NO_ERROR)throw Error(`WebGL draw error: 0x${error.toString(16)}`);
  }
- return {renderWorld,renderMap:mapRenderer.renderMap,backend:'WebGL 3D — La Catedral de la Marea v6.0',diagnostics:{cathedralBays:true,depthFurnishings:true,floorAtmospheres:true,blackWater:true,cinematicImpact:true,tonemapping:true,dreadVisuals:true,dreadApparitions:true,openingApparition:true,wallMountedTorches:true,scarredStone:true,bloodTrail:true,boneDebris:true,pointedRibs:true,threatTelegraphs:true,ritualVisualState:true,wetStone:true,arcaneVeins:true,shaderLinked:true,materials:23,creatureAnimation:true,shaderCompiled:true,drawChecked:true,architecturalReliefs:true,combatMotion:true,ambientMotes:true,runicReliefs:true,creatureAttackProfiles:true,cosmicCreaturePose:true,spellTrajectories:true,sculptedCreatures:true,facetedShrine:true,gothicRelief:true,artLabReady:true,gothicShowcase:true,ritualGallery:true,glbStudio:true}};
+ return {renderWorld,dispose,renderMap:mapRenderer.renderMap,backend:'WebGL 3D — La Catedral de la Marea v6.0',diagnostics:{cathedralBays:true,depthFurnishings:true,floorAtmospheres:true,blackWater:true,cinematicImpact:true,tonemapping:true,dreadVisuals:true,dreadApparitions:true,openingApparition:true,wallMountedTorches:true,scarredStone:true,bloodTrail:true,boneDebris:true,pointedRibs:true,threatTelegraphs:true,ritualVisualState:true,wetStone:true,arcaneVeins:true,shaderLinked:true,materials:23,creatureAnimation:true,shaderCompiled:true,drawChecked:true,architecturalReliefs:true,combatMotion:true,ambientMotes:true,runicReliefs:true,creatureAttackProfiles:true,cosmicCreaturePose:true,spellTrajectories:true,sculptedCreatures:true,facetedShrine:true,gothicRelief:true,artLabReady:true,gothicShowcase:true,ritualGallery:true,glbStudio:true}};
 }
 root.Dungeon3DRenderer={createRenderer};
 })(typeof globalThis!=='undefined'?globalThis:this);

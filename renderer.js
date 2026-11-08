@@ -76,6 +76,15 @@ function createRenderer(canvas,mapCanvas,core){
   const ctx=canvas.getContext('2d',{alpha:false}),mc=mapCanvas.getContext('2d');
   const mats={stone:texture('stone'),moss:texture('moss'),door:texture('door'),crypt:texture('crypt'),abyss:texture('abyss')};
   const bays={1:texture('stone',true),2:texture('abyss',true,2),3:texture('crypt',true,3),4:texture('crypt',true,4)};
+  const reliefs={};
+  if(typeof Image!=='undefined')for(const [index,name] of ['crypt','library','archive','ossuary'].entries()){
+    const image=new Image(),floor=index+1;
+    image.onload=()=>{
+      const panel=document.createElement('canvas');panel.width=panel.height=128;
+      panel.getContext('2d').drawImage(image,0,0,128,128);reliefs[floor]=panel;
+    };
+    image.src='assets/art/environment-'+name+'.svg';
+  }
   const creatureArt={};
   if(typeof Image!=='undefined')for(const kind of ['lurker','crawler','warden','specter','king','archivist','firstname','starseer','chorus','cartographer','voidmoth']){
     const image=new Image();image.src='assets/art/creature-'+kind+'.svg';creatureArt[kind]=image;
@@ -93,7 +102,7 @@ function createRenderer(canvas,mapCanvas,core){
     if(!record.opened){record.opened=true;record.started=time;}
     return Math.min(1,Math.max(0,(time-record.started)/850));
   }
-  function backdrop(t){
+  function backdrop(t,floor){
     let g=ctx.createLinearGradient(0,0,0,H);
     g.addColorStop(0,'#070c14');g.addColorStop(.37,'#121a20');
     g.addColorStop(.49,'#263039');g.addColorStop(.5,'#27221c');
@@ -112,6 +121,14 @@ function createRenderer(canvas,mapCanvas,core){
     const centerGlow=ctx.createRadialGradient(W/2,H*.49,0,W/2,H*.49,W*.48);
     centerGlow.addColorStop(0,'rgba(193,124,70,.10)');centerGlow.addColorStop(1,'rgba(0,0,0,0)');
     ctx.fillStyle=centerGlow;ctx.fillRect(0,0,W,H);
+    // Vault ribs converge on the corridor instead of adding a screen-wide filter.
+    ctx.strokeStyle=floor===3?'#403750':'#354a49';ctx.lineWidth=2;
+    for(const depth of [.12,.27,.44]){
+      const inset=W*depth,shoulder=H*(.10+depth*.7);
+      ctx.beginPath();ctx.moveTo(inset,H*.5);ctx.lineTo(inset,shoulder);
+      ctx.quadraticCurveTo(inset,shoulder*.3,W/2,Math.max(0,shoulder-H*.23));
+      ctx.quadraticCurveTo(W-inset,shoulder*.3,W-inset,shoulder);ctx.lineTo(W-inset,H*.5);ctx.stroke();
+    }
   }
   function camera(s){return {x:s.x+.5,y:s.y+.5,ang:s.dir*Math.PI/2-Math.PI/2};}
   function castRay(s,cam,rayAng,visualGate){
@@ -259,7 +276,7 @@ function createRenderer(canvas,mapCanvas,core){
     ctx.restore();
   }
   function renderWorld(s,time=0,effect=''){
-    const cam=camera(s);backdrop(time);
+    const cam=camera(s);backdrop(time,s.floor);
     const open=s.floor===3?s.labyrinthGateOpen:s.gateOpen;
     const gateProgress=gateLift(s.floor,open,time);
     const visualGate=open&&gateProgress<1;
@@ -273,7 +290,8 @@ function createRenderer(canvas,mapCanvas,core){
       const top=(H-wallHeight)/2;
       const isGate=core.gateAt(hit.mapX,hit.mapY,s.floor);
       const isDoor=core.tile(hit.mapX,hit.mapY,s.floor)==='X'||isGate;
-      const mat=isDoor?mats.door:(hit.mapX+hit.mapY)%3===0?bays[s.floor]:(hit.mapX*9+hit.mapY*11)%9<2?mats.moss:s.floor===2?mats.abyss:s.floor===3?mats.crypt:s.floor===4?mats.crypt:mats.stone;
+      const mural=reliefs[s.floor]&&((hit.mapX+hit.mapY)%7===0||(s.floor===4&&hit.mapX===7&&hit.mapY===1));
+      const mat=isDoor?mats.door:mural?reliefs[s.floor]:(hit.mapX+hit.mapY)%3===0?bays[s.floor]:(hit.mapX*9+hit.mapY*11)%9<2?mats.moss:s.floor===2?mats.abyss:s.floor===3?mats.crypt:s.floor===4?mats.crypt:mats.stone;
       const lift=isGate&&open?gateProgress:0;
       const shownHeight=Math.max(0,wallHeight*(1-lift));
       // Rising portcullis: draw only the still-visible lower texture strip, lifted upward.
@@ -333,9 +351,22 @@ function createRenderer(canvas,mapCanvas,core){
     if(effect==='frost'){ctx.fillStyle='rgba(113,202,236,.23)';ctx.fillRect(0,0,W,H);}
     if(effect==='ward'){ctx.fillStyle='rgba(224,185,94,.14)';ctx.fillRect(0,0,W,H);}
     if(s.ward>0){ctx.strokeStyle='rgba(235,198,115,.55)';ctx.lineWidth=5;ctx.strokeRect(5,5,W-10,H-10);}
-    const phaseBoss=s.monsters.find(m=>m.hp>0&&(m.floor||1)===s.floor&&['warden','king','archivist','firstname'].includes(m.kind)&&m.phaseAwakened);
+    const phaseBoss=s.monsters.find(m=>m.hp>0&&(m.floor||1)===s.floor&&['warden','king','archivist','firstname'].includes(m.kind)&&m.phaseAwakened&&spriteVisible(project(cam,m.x+.5,m.y+.5)));
     if(phaseBoss){const pulse=.10+.07*(.5+.5*Math.sin(time*.006));ctx.strokeStyle=phaseBoss.telegraph?`rgba(219,91,82,${pulse+.12})`:`rgba(166,105,205,${pulse})`;ctx.lineWidth=phaseBoss.telegraph?4:2;ctx.beginPath();ctx.arc(W/2,H/2,Math.min(W,H)*(.34+.018*Math.sin(time*.004)),0,TAU);ctx.stroke();if(phaseBoss.telegraph){ctx.fillStyle='rgba(126,34,49,.07)';ctx.fillRect(0,0,W,H);}}
     if(effect==='heal'){ctx.fillStyle='rgba(56,146,97,.12)';ctx.fillRect(0,0,W,H);}
+    if(effect==='attack'){
+      ctx.save();ctx.lineCap='round';ctx.strokeStyle='#d8be8b';ctx.lineWidth=5;
+      ctx.beginPath();ctx.moveTo(W*.38,H*.68);ctx.quadraticCurveTo(W*.49,H*.45,W*.65,H*.29);ctx.stroke();
+      ctx.strokeStyle='#fff0c4';ctx.lineWidth=1.5;ctx.stroke();ctx.restore();
+    }
+    if(effect==='frost'||effect==='spell'){
+      ctx.save();ctx.strokeStyle=effect==='frost'?'#a6e9e9':'#b89de6';ctx.lineWidth=2;
+      for(let i=0;i<6;i++){
+        const a=i*TAU/6,r=H*.10,px=W/2+Math.cos(a)*r,py=H*.5+Math.sin(a)*r;
+        ctx.beginPath();ctx.moveTo(W/2,H*.5);ctx.lineTo(px,py);ctx.lineTo(px+Math.cos(a+.8)*r*.35,py+Math.sin(a+.8)*r*.35);ctx.stroke();
+      }
+      ctx.restore();
+    }
     ctx.strokeStyle='rgba(231,204,155,.55)';ctx.lineWidth=1.4;
     ctx.beginPath();ctx.moveTo(W/2-8,H/2);ctx.lineTo(W/2+8,H/2);ctx.moveTo(W/2,H/2-8);ctx.lineTo(W/2,H/2+8);ctx.stroke();
     if(s.dead||s.won){
@@ -343,7 +374,7 @@ function createRenderer(canvas,mapCanvas,core){
       ctx.textAlign='center';ctx.fillStyle='#d9ad75';ctx.font='bold 42px Georgia';
       ctx.fillText(s.won?'EL UMBRAL SE HA ABIERTO':'LA COMPAÑÍA HA CAÍDO',W/2,H/2-20);
       ctx.fillStyle='#b8b1a4';ctx.font='20px Georgia';
-      ctx.fillText(s.won?'Habéis escapado de las tres profundidades.':'Las sombras vuelven a reclamar sus nombres.',W/2,H/2+24);
+      ctx.fillText(s.won?'Habéis escapado de las cuatro profundidades.':'Las sombras vuelven a reclamar sus nombres.',W/2,H/2+24);
       ctx.textAlign='start';
     }
   }
@@ -369,7 +400,7 @@ function createRenderer(canvas,mapCanvas,core){
     mc.beginPath();mc.moveTo(left+(s.x+.5)*size,top+(s.y+.5)*size);
     mc.lineTo(left+(s.x+.5+core.DIRS[s.dir][0]*.65)*size,top+(s.y+.5+core.DIRS[s.dir][1]*.65)*size);mc.stroke();
   }
-  return {renderWorld,renderMap};
+  return {renderWorld,renderMap,backend:'Canvas 2.5D · relieves de la Catedral'};
 }
 return {createRenderer};
 });

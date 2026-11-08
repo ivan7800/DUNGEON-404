@@ -15,7 +15,8 @@ try{
  global.document={createElement:()=>({width:128,height:128,getContext:()=>context})};
  global.Image=class{constructor(){this.complete=true;this.naturalWidth=256;images.push(this);}};
  const renderer=R.createRenderer({width:960,height:540,getContext:()=>context},{getContext:()=>context},C);
- assert.equal(images.length,11);
+ assert.equal(images.filter(image=>image.src.includes('creature-')).length,11);
+ assert.equal(images.filter(image=>image.src.includes('environment-')).length,4);
  for(const kind of kinds){
   const s=C.createGame(),m=s.monsters.find(m=>m.kind===kind);s.floor=1;m.floor=1;s.x=4;s.y=3;s.dir=1;s.monsters=[m];m.x=5;m.y=3;m.frozen=1;m.telegraph=true;
   const before=drawn.length;renderer.renderWorld(s,200);assert(drawn.length>before,kind+' must use its vector image when available');

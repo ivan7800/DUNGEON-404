@@ -1,3 +1,37 @@
+# v6.6 — Auditoría integral y mejoras de presentación
+
+Fecha: 8 de noviembre de 2026. Rama de trabajo: `codex/v6.6-campaign-audit`. Base remota: `cf52b5281df2f73854a4ff0dba0d3e87d12f2d55`. Los apartados v6.0–v6.5 que siguen son históricos y sus estados de rama/publicación no describen la v6.6.
+
+## Contenido real de la campaña
+
+Cuatro mapas, cuatro custodios con fases, cuatro entidades cósmicas, especialidades para cuatro personajes, equipo, altares, investigación, tomos, rituales, cordura/lucidez, ocho secretos y cuatro ecos/reliquias. Hay cuatro desenlaces deterministas. La música usa 14 pistas locales y 20 efectos; no hay doblaje ni cinemáticas de vídeo. El código permite terminar la campaña; no se presenta como una campaña larga ni como diversión demostrada por pruebas unitarias.
+
+## Causas encontradas y correcciones
+
+1. Los fundidos de audio se cancelaban mediante un token sin detener las pistas abandonadas. Una transición rápida podía dejar varias músicas superpuestas. Ahora cada transición retira sus voces anteriores, conserva ganancias y limita efectos a ocho voces.
+2. `validGame` accedía a estructuras anidadas antes de validarlas; JSON incompleto podía lanzar excepciones. Se validan contenedores y clases antes de leerlos. Se conserva el formato 16; esquemas futuros desconocidos se rechazan. La expresión regular de trampas excluía por error la cuarta profundidad: se corrige y prueba su ciclo de guardado/carga.
+3. El laboratorio intentaba crear Canvas sobre un lienzo que ya podía tener WebGL. Ahora usa uno nuevo. El controlador libera buffers/programas al cambiar motor; tras restauración de contexto no reutiliza recursos GL invalidados.
+4. La música y el aviso de jefe reaccionaban a enemigos tras paredes; se alinean con los pronósticos visibles. Al iniciar/cargar se limpian los avisos de otra sesión. La alerta Canvas de fase deja de aparecer por un jefe oculto.
+5. Las oportunidades narrativas exigían recordar teclas/coordenadas y el sonido estaba relegado al códice. Se añaden señales cercanas con costes y enlaces de decisión, progreso y accesos directos sobre la partida. Se corrigen textos heredados que aún describían tres profundidades/destinos.
+
+## Arte entregado
+
+Cuatro SVG originales reproducibles con Python, integrados como relieves en paredes del raycaster: sepulcro del custodio, biblioteca bajo el agua, astrolabio y nichos óseos. Bóvedas y trazos de acero/magia en Canvas. No son arte de terceros ni una recoloración de las criaturas. El proyecto conserva sus once ilustraciones, cuatro retratos, sello y seis GLB. WebGL mantiene su contenido; esta revisión no incorpora nuevas mallas de monstruos.
+
+## Resultados locales
+
+- Línea base: 48 scripts JavaScript pasados antes de editar. Tras cambios: 52 scripts, incluidos cuatro de regresión v6.6.
+- Ruta de campaña automática terminada con cinco valores fijos del azar (0,05/0,25/0,49/0,75/0,95): 223–226 acciones del guion, dos o tres supervivientes. Es una comprobación de ruta accesible con una estrategia concreta, no cinco partidas humanas ni una medición de duración.
+- 20 SVG XML válidos; seis GLB decodificados y transformados por las pruebas; 34 OGG decodificables con ffprobe (0,21–36 s por archivo). No equivale a escucha crítica.
+- Sintaxis JavaScript, Python y Bash; rutas relativas y claves de caché 66; IDs, selectores/listeners y ausencia de Service Worker.
+- El navegador automático local no pudo arrancar: el ejecutable Chromium no estaba instalado y su descarga devolvió un archivo no válido. El navegador compartido tampoco puede acceder al servidor local (conexión rechazada). Se añade `tests/browser-audit.cjs` y un job de Actions para revisar el HTTP real en un perfil aislado.
+
+## Verificación de publicación
+
+Pendiente de ejecutar la auditoría Chromium en Actions y revisar la web publicada. Los resultados reales se incorporarán antes de cerrar esta entrega. No se afirma todavía una nueva revisión visual de v6.6 ni una medición de GPU física.
+
+---
+
 # Addendum v6.5 — interfaz analógica de terror cósmico
 
 La interfaz usa etiquetas de archivo/cinta, tipografía monoespaciada en controles y paneles, contraste de fósforo turquesa y ámbar, violeta para lo anómalo y carmesí para peligro. Líneas de barrido sutiles solo aparecen en superficies de interfaz; la escena Canvas/WebGL conserva el arte original. No se añaden fuentes externas, dependencias ni efectos animados.

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><title>Sepulcro de los custodios</title><rect width="256" height="256" fill="#172327"/><path d="M0 32H256M0 96H256M0 160H256M0 224H256M64 0V32M192 0V32M32 32V96M128 32V96M224 32V96M64 96V160M192 96V160M32 160V224M128 160V224M224 160V224" stroke="#080e12" stroke-width="3"/>
+<path d="M38 239V84Q38 48 128 12Q218 48 218 84V239Z" fill="#080f17" stroke="#927b58" stroke-width="4"/>
+<path d="M48 234V86Q48 54 128 24Q208 54 208 86V234" fill="none" stroke="#405a58" stroke-width="3"/>
+<path d="M19 8V248M237 8V248" stroke="#66746b" stroke-width="9"/>
+<path d="M9 20H29M227 20H247M9 53H29M227 53H247M9 222H29M227 222H247M9 244H29M227 244H247" stroke="#b2a27a" stroke-width="5"/><path d="M128 34L143 43V59L128 68L113 59V43Z M113 51H143M128 35V67M119 58L128 42L137 58Z" fill="none" stroke="#86d3c3" stroke-width="1.5"/><path d="M66 228V142Q66 102 128 83Q190 102 190 142V228Z" fill="#273234" stroke="#6b7466" stroke-width="3"/>
+<circle cx="128" cy="130" r="31" fill="#101c23" stroke="#a8946f" stroke-width="2"/>
+<path d="M128 91V104M128 156V169M89 130H102M154 130H167M101 103L110 112M146 148L155 157M101 157L110 148M146 112L155 103" stroke="#847450" stroke-width="2"/>
+<path d="M115 146L104 170L94 206H162L152 170L141 146Z" fill="#65756c" stroke="#c0b394" stroke-width="2"/>
+<path d="M128 147V202M107 178L128 166L149 178M111 198L128 185L145 198" fill="none" stroke="#273335" stroke-width="3"/>
+<path d="M114 124Q114 107 128 107Q142 107 142 124L138 141H118Z" fill="#c0b798"/><path d="M118 125H124M132 125H138M125 135H131" stroke="#152024" stroke-width="3"/>
+<rect x="74" y="207" width="108" height="20" fill="#37484a" stroke="#a18c65" stroke-width="2"/>
+<path d="M84 214H172M84 220H172" stroke="#162329"/><path d="M59 200V218M197 200V218" stroke="#d2bd85" stroke-width="4"/><path d="M59 187Q50 201 59 203Q68 201 59 187M197 187Q188 201 197 203Q206 201 197 187" fill="#79ddc3"/></svg>

@@ -1,10 +1,10 @@
-# DUNGEON 404 — La Catedral de la Marea · v6.5
+# DUNGEON 404 — La Catedral de la Marea · v6.6
 
 Dungeon crawler por casillas y acciones: cuatro aventureros descienden por catedrales enterradas bajo un océano cósmico. La campaña conserva sus cuatro profundidades, investigación, rituales, equipo, cordura y ocho secretos; ahora ofrece cuatro desenlaces y reliquias de eco de un solo uso.
 
 La campaña continúa la progresión y los sistemas de las versiones v4.2 y v4.3.
 
-Esta versión actualiza la interfaz con una estética de archivo analógico de terror cósmico de los ochenta, manteniendo intacta la presentación de la mazmorra. Consulta [RELEASE-REPORT.md](RELEASE-REPORT.md) para el alcance y las comprobaciones realizadas y pendientes.
+La v6.6 añade relieves originales por profundidad al modo Canvas, señales contextuales de exploración y accesos directos a sonido, guardado y ajustes sobre la partida. Conserva la estética de archivo analógico de terror cósmico de los ochenta. Consulta [RELEASE-REPORT.md](RELEASE-REPORT.md) para el alcance y las comprobaciones realizadas y pendientes.
 
 ## Iniciar
 
@@ -18,7 +18,7 @@ Necesitas Python 3 y un navegador moderno. Sin cuentas, claves, dependencias de 
 
 ## Identidad y presentación
 
-Piedra oscura, hueso tallado, latón envejecido y luz de marea. Un sello original une el nombre de la expedición, cuatro retratos y once ilustraciones vectoriales de criaturas en Canvas. La arquitectura WebGL incorpora vanos de arco apuntado, tracerías y columnas: libros en la Biblioteca, marcas de astrolabio en el Laberinto y nichos óseos en el Osario.
+Piedra oscura, hueso tallado, latón envejecido y luz de marea. Un sello original une el nombre de la expedición, cuatro retratos y once ilustraciones vectoriales de criaturas en Canvas y cuatro relieves arquitectónicos distintos: sepulcro, biblioteca inundada, astrolabio y osario. Se pueden regenerar con `python3 tools/create-environment-art.py`. La arquitectura WebGL incorpora vanos de arco apuntado, tracerías y columnas: libros en la Biblioteca, marcas de astrolabio en el Laberinto y nichos óseos en el Osario.
 
 La vista ocupa el centro. La compañía, el mapa y la cordura permanecen accesibles; el códice reúne Juramento, Inventario, Códice y Ajustes y partida. Las artes y recursos adicionales se despliegan bajo las cuatro acciones principales. El diseño se adapta a una columna y retratos en dos columnas en pantallas estrechas.
 
@@ -72,9 +72,12 @@ La cordura es compartida. Modifica la atmósfera y las posibilidades narrativas;
 
 Se conserva la clave `dungeon404-save-v16` y el esquema 16. Las propiedades tácticas nuevas son opcionales y validadas: recuperación de habilidades, fase de jefe e interrupción. Las migraciones anteriores permanecen. Usar habilidades y cargar una partida mantienen sus recuperaciones y avisos de ataque.
 
+- **La Catedral recuerda:** conserva los cuatro recuerdos de eco y termina con al menos 4 de Lucidez; tiene prioridad sobre las otras rutas.
 - **El Silencio:** ruta estándar.
 - **El Pacto de la Marea:** rito de la Cripta completado y Marea sellada.
 - **El Sueño Invertido:** Marea escuchada, ambos manuscritos y al menos 4 de Lucidez al terminar.
+
+Las oportunidades cercanas aparecen bajo la escena: leer, descifrar, buscar mampostería y abrir umbrales. Las decisiones de altar y eco llevan al Juramento o Códice. Los testimonios y tomos muestran sus costes antes de leer; consultar estas señales no consume turnos.
 
 La interfaz explica los costes y consecuencias antes de confirmar la decisión irreversible del altar. Los desenlaces son variantes narrativas, sin cinemáticas nuevas.
 
@@ -89,3 +92,11 @@ for test in tests/*.js; do node "$test" || exit 1; done
 `tests/browser-lab.html` ofrece escenarios reproducibles de las cuatro plantas y un jefe en fase II, una vista de 390 px y una medición de dibujo. Utiliza la interfaz real; restaura el guardado anterior tras cargar cada escenario. No pulses Guardar en un escenario si deseas conservar tu partida local. Este banco es para revisión manual, no una prueba automática de navegador.
 
 La instrumentación informa tiempo CPU de dibujo y frecuencia observada en el navegador que la ejecuta; no mide GPU ni certifica rendimiento en un equipo físico. El informe de entrega detalla la revisión de Canvas y la indisponibilidad de WebGL en el navegador compartido.
+
+## Auditoría v6.6
+
+52 scripts Node cubren reglas, cuatro rutas narrativas, migraciones, arte y recuperación de render. Las regresiones de v6.6 comprueban transiciones musicales interrumpidas, límite de efectos simultáneos, rechazo limpio de JSON mal formado, trampas de la cuarta profundidad, oportunidades contextuales y liberación de recursos WebGL. La clave y esquema de guardado siguen siendo 16.
+
+Para la auditoría actual de navegador, ejecuta `npm install --no-save --package-lock=false playwright@1.56.1`, `npx playwright install chromium` y `node tests/browser-audit.cjs`. Usa un perfil aislado y una ruta HTTP `/DUNGEON-404/`; prueba botones, menús, las cuatro profundidades, un jefe, móvil 390/320 px, descarga/importación JSON y captura PNG del laboratorio. Deja capturas y un informe en un directorio temporal. El job `browser-audit` de Actions conserva estos archivos como artefacto. Los scripts Python con versiones antiguas en su nombre son comprobaciones históricas; el punto de entrada actual es `browser-audit.cjs`.
+
+Los 34 OGG son locales: 14 pistas de exploración/combate/jefes/ambiente y 20 efectos. El sonido se activa con un clic del jugador; los navegadores restringen el inicio automático. Una prueba de decodificación no sustituye una escucha crítica ni una partida humana completa.
