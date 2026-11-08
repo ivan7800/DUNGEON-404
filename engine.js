@@ -274,6 +274,7 @@
       schema:VERSION, floor:1, x:1,y:1,dir:1,party:HEROES.map(h=>({...h})),selected:0,
       potions:3,ether:2,scrolls:1,key:false,sigil:false,voidHeart:false,finalRune:false,turn:0,won:false,ending:null,dead:false,guard:null,ward:0,
       sanity:100,lucidity:0,tomesRead:[],knowledge:[],witnessed:[],ritualSealed:false,drownedClues:[],drownedRitual:'none',secretsFound:[],gear:[],gearFound:[],gateOpen:false,labyrinthGateOpen:false,disarmedTraps:[],visitedByFloor:{1:['1,1'],2:[],3:[],4:[]},
+      shrines:[],
       visited:['1,1'],monsters:[...START_MONSTERS,...LOWER_MONSTERS,...LABYRINTH_MONSTERS,...ABYSS_MONSTERS,...COSMIC_ROAMERS].map(m=>({...m})),
       items:['3,11','4,13'],trapsTriggered:[],loreRead:[],
       messages:['Prólogo: la expedición ha desaparecido. Las campanas suenan bajo la tierra. Investiga las inscripciones (I).']
@@ -358,6 +359,24 @@
     Maga:{name:'Escarcha del Olvido',detail:'7 PM. Alcanza dos casillas; hiere y congela durante dos fases. Recuperación: 3 turnos.',cooldown:3},
     Clérigo:{name:'Santuario de la marea',detail:'6 PM. Reduce en 3 PV cada golpe recibido por el grupo durante tres fases. Recuperación: 3 turnos.',cooldown:3}
   });
+  const PATHS=Object.freeze({
+    bulwark:'Bastión · +6 PV máximos y +1 defensa',
+    edge:'Filo · +2 daño y especialidad más fuerte'
+  });
+  function choosePath(s,events,path){
+    const p=s.party[s.selected];
+    if(!p||p.hp<=0||p.level<2||p.path){report(s,'Esta elección requiere nivel 2 y solo se realiza una vez por aventurero.',events,'warning');return;}
+    if(path==='bulwark'){p.max+=6;p.hp+=6;p.defense+=1;}
+    else {p.damage+=2;}
+    p.path=path;
+    report(s,`${p.name} jura ${PATHS[path]}. La elección queda guardada.`,events,'level');
+  }
+  function shrine(s,events,choice){
+    if(s.x!==1||s.y!==1||s.shrines.includes(s.floor)){report(s,'Este altar de entrada ya respondió o estás lejos de él.',events,'warning');return;}
+    s.shrines.push(s.floor);
+    if(choice==='mind'){s.sanity=clampSanity(s.sanity+12);report(s,'El altar ahogado conserva un nombre: cordura +12. Su luz se extingue.',events,'lore');}
+    else {s.ether=Math.min(1000,s.ether+1);report(s,'Retiras una esencia del relicario del altar. Su luz se extingue.',events,'loot');}
+  }
   function signature(s,events,rng){
     const p=s.party[s.selected],spec=SPECIALTIES[p?.role];
     if(!p||p.hp<=0||!spec){report(s,'Selecciona a un aventurero vivo.',events,'warning');return;}
@@ -370,7 +389,7 @@
     }else if(p.role==='Pícara'){
       const [dx,dy]=DIRS[s.dir],m=monsterAt(s,s.x+dx,s.y+dy);
       if(!m){report(s,'Mara necesita un enemigo en la casilla de enfrente.',events,'warning');return;}
-      const damage=Math.max(1,p.damage+(GEAR[p.equippedWeapon]?.bonus||0)+4+p.level);
+      const damage=Math.max(1,p.damage+(GEAR[p.equippedWeapon]?.bonus||0)+4+p.level+(p.path==='edge'?3:0));
       m.hp=Math.max(0,m.hp-damage);m.telegraph=false;m.staggered=m.hp?1:0;
       if(!m.hp)reward(s,m,events);
       report(s,`Mara corta el canto de ${m.name}: ${damage} de daño y una fase interrumpida.`,events,'attack');
@@ -427,10 +446,10 @@
         const target=Number.isInteger(s.intercept)&&protector?.hp>0?protector:living[(s.turn+m.x)%living.length];
         let amount=Math.max(1,m.damage-target.defense-(GEAR[target.equippedArmor]?.bonus||0)+rngInt(rng,3)-1);
         if((cosmicRoamer||boss)&&m.telegraph){amount=Math.ceil(amount*(boss&&m.hp<=m.max/2?1.65:1.35));m.telegraph=false;}
-        if(wardActive)amount=Math.max(0,amount-3);
+        if(wardActive)amount=Math.max(0,amount-(s.party.some(p=>p.hp>0&&p.role==='Clérigo'&&p.path==='edge')?4:3));
         if(ranged)amount=Math.max(1,amount-2);
         if(s.guard===s.party.indexOf(target)){
-          amount=Math.max(0,amount-6);
+          amount=Math.max(0,amount-(target.role==='Guerrero'&&target.path==='edge'?8:6));
           report(s,`${target.name} bloquea parte del ataque.`,events,'guard');
         }
         target.hp=Math.max(0,target.hp-amount);
@@ -685,7 +704,7 @@
     }
     if(!target){report(s,'La escarcha requiere un objetivo en línea recta hasta dos casillas.',events,'warning');return;}
     p.mana-=7;
-    const damage=7+p.level*2+(p.equippedWeapon==='staff'?GEAR.staff.bonus:0);
+    const damage=7+p.level*2+(p.equippedWeapon==='staff'?GEAR.staff.bonus:0)+(p.path==='edge'?3:0);
     target.hp=Math.max(0,target.hp-damage);
     target.frozen=target.hp>0?2:0;target.telegraph=false;
     if(target.hp===0)reward(s,target,events);
@@ -781,6 +800,8 @@
     else if(action==='strafeLeft')move(s,...DIRS[(s.dir+3)%4],events,rng);
     else if(action==='strafeRight')move(s,...DIRS[(s.dir+1)%4],events,rng);
     else if(action==='signature')signature(s,events,rng);
+    else if(action==='path:bulwark'||action==='path:edge')choosePath(s,events,action.slice(5));
+    else if(action==='shrine:mind'||action==='shrine:ether')shrine(s,events,action.slice(7));
     else if(action==='attack')attack(s,events,rng);
     else if(action==='guard')guard(s,events,rng);
     else if(action==='interact')interact(s,events);
@@ -822,6 +843,7 @@
     if(s.knowledge!==undefined && (!Array.isArray(s.knowledge)||s.knowledge.length>3||new Set(s.knowledge).size!==s.knowledge.length||s.knowledge.some(k=>!['custodians','drowned','seal'].includes(k))))return false;
     if(s.witnessed!==undefined && (!Array.isArray(s.witnessed)||s.witnessed.length>3||new Set(s.witnessed).size!==s.witnessed.length||s.witnessed.some(k=>!['lurker','crawler','warden'].includes(k))))return false;
     if(s.ritualSealed!==undefined && typeof s.ritualSealed!=='boolean')return false;
+    if(s.shrines!==undefined&&(!Array.isArray(s.shrines)||s.shrines.length>4||new Set(s.shrines).size!==s.shrines.length||s.shrines.some(v=>![1,2,3,4].includes(v))))return false;
     const coord=(p,floor)=>Number.isInteger(p.x)&&Number.isInteger(p.y)&&passable(p.x,p.y,floor||1);
     const natural=(v,max=100000)=>Number.isInteger(v)&&v>=0&&v<=max;
     return !!s&&typeof s==='object'&&coord(s,s.floor)&&natural(s.dir,3)&&natural(s.selected,3)&&
@@ -840,7 +862,7 @@
       Array.isArray(s.party)&&s.party.length===4&&s.party.every(p=>p&&typeof p.name==='string'&&p.name.length<50&&
         typeof p.role==='string'&&typeof p.weapon==='string'&&typeof p.armor==='string'&&
         Number.isFinite(p.hp)&&Number.isFinite(p.max)&&p.max>0&&p.max<10000&&p.hp>=0&&p.hp<=p.max&&
-        (p.skillReadyAt===undefined||natural(p.skillReadyAt,100000))&&natural(p.level,1000)&&p.level>=1&&natural(p.xp)&&natural(p.mana)&&natural(p.maxMana,10000)&&p.mana<=p.maxMana&&
+        (p.skillReadyAt===undefined||natural(p.skillReadyAt,100000))&&(p.path===undefined||(['bulwark','edge'].includes(p.path)&&p.level>=2))&&natural(p.level,1000)&&p.level>=1&&natural(p.xp)&&natural(p.mana)&&natural(p.maxMana,10000)&&p.mana<=p.maxMana&&
         Number.isFinite(p.damage)&&Number.isFinite(p.defense))&&
       Array.isArray(s.monsters)&&s.monsters.length<=28&&s.monsters.every(m=>m&&coord(m,m.floor)&&
         (m.telegraph===undefined||typeof m.telegraph==='boolean')&&(m.phaseAwakened===undefined||typeof m.phaseAwakened==='boolean')&&
@@ -855,7 +877,7 @@
   function importSave(raw){
     if(!raw||typeof raw!=='object')return null;
     const previous=raw.schema||3;
-    const s={...raw,schema:VERSION,
+    const s={...raw,schema:VERSION,shrines:raw.shrines===undefined?[]:raw.shrines,
       ending:raw.ending===undefined?(raw.won?'silence':null):raw.ending,
       sanity:raw.sanity===undefined?100:raw.sanity,
       lucidity:raw.lucidity===undefined?0:raw.lucidity,
@@ -920,5 +942,5 @@
     return s;
   }
   return {VERSION,SAVE_KEY,V15_SAVE_KEY,V14_SAVE_KEY,V13_SAVE_KEY,SECRETS,V12_SAVE_KEY,V11_SAVE_KEY,V10_SAVE_KEY,V9_SAVE_KEY,V8_SAVE_KEY,V7_SAVE_KEY,PREVIOUS_SAVE_KEY,V5_SAVE_KEY,LEGACY_SAVE_KEY,V4_SAVE_KEY,LEVEL,LOWER,LABYRINTH,ABYSS,COSMIC_CLUES,FORBIDDEN_TOMES,DROWNED_TEXTS,COSMIC_ENEMIES,ENDINGS,resolveEnding,WIDTH,HEIGHT,DIRS,LORES,TRAPS,GEAR,BESTIARY,PORTCULLIS,PRESSURE_PLATE,gateAt,
-    SPECIALTIES,threats,tile,wallAt,passable,createGame,monsterAt,dispatch,validGame,importSave};
+    SPECIALTIES,PATHS,threats,tile,wallAt,passable,createGame,monsterAt,dispatch,validGame,importSave};
 });

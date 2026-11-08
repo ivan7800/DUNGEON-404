@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#071517">
   <meta name="description" content="DUNGEON 404: dungeon crawler original en primera persona, gratuito, offline y jugable en navegador.">
-  <title>DUNGEON 404 · La Catedral de la Marea · v6.0</title>
-  <link rel="stylesheet" href="style.css?v=60">
+  <title>DUNGEON 404 · La Catedral de la Marea · v6.1</title>
+  <link rel="stylesheet" href="style.css?v=61">
 </head>
 <body>
 <main class="shell">
@@ -74,7 +74,7 @@
       </aside>
   </div>
   <section class="codex" aria-label="Códice de la expedición"><div role="tablist" class="codex-nav" aria-label="Páginas del códice"><button type="button" id="tab-quest" role="tab" tabindex="0" aria-controls="page-quest" aria-selected="true" data-page="quest">Juramento</button><button type="button" id="tab-bag" role="tab" tabindex="-1" aria-controls="page-bag" aria-selected="false" data-page="bag">Inventario</button><button type="button" id="tab-lore" role="tab" tabindex="-1" aria-controls="page-lore" aria-selected="false" data-page="lore">Códice</button><button type="button" id="tab-settings" role="tab" tabindex="-1" aria-controls="page-settings" aria-selected="false" data-page="settings">Ajustes y partida</button></div><div id="page-quest" role="tabpanel" tabindex="0" class="codex-page" aria-labelledby="tab-quest"><section class="panel quest-panel"><div class="section-title"><h2>EL JURAMENTO</h2><span>MISIÓN PRINCIPAL</span></div>
-        <div id="quests" class="quest-list"></div><p id="ward-status" class="ward-status" aria-live="polite">Sin protección mágica activa</p><div class="equipment"><span>BESTIARIO · ENEMIGOS PRESENTES</span><div id="bestiary" class="bestiary" aria-live="polite"></div></div>
+        <div id="quests" class="quest-list"></div><div id="shrine" class="shrine" aria-live="polite"><p id="shrine-status"></p><div id="shrine-choices" class="gear-list"></div></div><p id="ward-status" class="ward-status" aria-live="polite">Sin protección mágica activa</p><div class="equipment"><span>BESTIARIO · ENEMIGOS PRESENTES</span><div id="bestiary" class="bestiary" aria-live="polite"></div></div>
       </section>
       <section class="panel ending-panel" aria-label="Destino del Nombre Anterior">
         <div class="section-title"><h2>LOS TRES DESTINOS</h2><span>ECOS DEL UMBRAL</span></div>
@@ -84,6 +84,7 @@
       </section>
       </div><div id="page-bag" role="tabpanel" tabindex="0" class="codex-page" aria-labelledby="tab-bag" hidden=""><section class="panel supplies-panel"><div class="section-title"><h2>PERTRECHOS</h2><span>RECURSOS</span></div><div id="inventory" class="supplies"></div><div class="equipment"><span>MOCHILA · CONSUMIBLES</span><div id="bag" class="gear-list"></div></div>
         <div class="equipment"><span>EQUIPO ACTUAL</span><p id="equipment"></p><div id="gear" class="gear-list" aria-label="Objetos equipables"></div></div>
+        <div class="equipment" aria-label="Juramento de progreso"><span>JURAMENTO DE PROGRESO · NIVEL 2</span><p id="path-status" aria-live="polite"></p><div id="path-choices" class="gear-list"></div></div>
       </section>
       </div><div id="page-lore" role="tabpanel" tabindex="0" class="codex-page" aria-labelledby="tab-lore" hidden=""><section class="panel cosmic-panel" id="sanity-panel" data-zone="stable"><div class="section-title"><h2>TESTIMONIOS DE PIEDRA</h2></div><p id="knowledge-status" class="system-hint">TESTIMONIOS 0/3 · RITO PENDIENTE</p>
         <p class="cosmic-help">Pulsa <kbd>I</kbd> en una inscripción (o delante de ella). Descubre los testimonios de (5,1) y (3,11) y realiza el rito con <kbd>O</kbd> en (3,11).</p>
@@ -118,13 +119,13 @@
         </div>
         <p class="system-hint">Guarda en este navegador o exporta un JSON para pasar tu partida a otro equipo. No se envían archivos a ningún servidor.</p>
       </section>
-    </div></section><footer>DUNGEON 404 · LA CATEDRAL DE LA MAREA · v6.0 · I. ROIG</footer></main>
-<script src="engine.js?v=60" defer></script>
-<script src="renderer.js?v=60" defer></script>
-<script src="renderer3d.js?v=60" defer></script>
+    </div></section><footer>DUNGEON 404 · LA CATEDRAL DE LA MAREA · v6.1 · I. ROIG</footer></main>
+<script src="engine.js?v=61" defer></script>
+<script src="renderer.js?v=61" defer></script>
+<script src="renderer3d.js?v=61" defer></script>
 <script src="audio.js?v=25" defer></script>
-<script src="glb-model.js?v=60" defer></script>
-<script src="interface.js?v=60" defer></script><script src="game.js?v=60" defer></script>
-<script src="presentation.js?v=60" defer></script>
+<script src="glb-model.js?v=61" defer></script>
+<script src="interface.js?v=61" defer></script><script src="game.js?v=61" defer></script>
+<script src="presentation.js?v=61" defer></script>
 </body>
 </html>

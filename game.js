@@ -188,6 +188,9 @@ function renderUI(){
     [!state.monsters.some(m=>m.kind==='firstname'&&m.hp>0),'Derrota al Primer Nombre'],
     [state.won,'Escapa del Osario (E)']
   ];
+  const shrineReady=state.x===1&&state.y===1&&!(state.shrines||[]).includes(state.floor);
+  $('shrine-status').textContent=shrineReady?'ALTAR DE ENTRADA · Elige una vez: claridad o esencia.':(state.shrines||[]).includes(state.floor)?'ALTAR DE ENTRADA · Su luz ya se ha extinguido.':'ALTAR DE ENTRADA · Vuelve a (1,1) para elegir.';
+  $('shrine-choices').replaceChildren(...(shrineReady?[["RECUPERAR 12 CORDURA","shrine:mind"],["TOMAR 1 ESENCIA","shrine:ether"]].map(([label,action])=>{const b=element('button','gear-btn',label);b.type='button';b.addEventListener('click',()=>play(action));return b;}):[]));
   $('quests').replaceChildren(...goals.map(([done,name])=>{
     const row=element('div',`quest${done?' done':''}`);
     row.append(element('span','quest-mark',done?'✓':'◇'),element('span','',name));return row;
@@ -208,6 +211,11 @@ function renderUI(){
   }));
   $('ward-status').textContent=state.ward?`✥ SANTUARIO ACTIVO · ${state.ward} fases enemigas restantes`:'Sin protección mágica activa';
   $('equipment').textContent=`${p.name} · ARMA: ${core.GEAR[p.equippedWeapon]?.label||p.weapon} · ARMADURA: ${core.GEAR[p.equippedArmor]?.label||p.armor} · XP ${p.xp}/${p.level*35}`;
+  $('path-status').textContent=p.path?`${p.name} · ${core.PATHS[p.path]}`:p.level<2?`${p.name} necesita nivel 2 para elegir su juramento.`:`${p.name} puede escoger un juramento permanente. Bastión resiste; Filo potencia su especialidad.`;
+  $('path-choices').replaceChildren(...(p.path?[]:Object.entries(core.PATHS).map(([path,label])=>{
+    const b=element('button','gear-btn path-choice',label);b.type='button';b.disabled=p.level<2||p.hp<=0||state.dead||state.won;
+    b.addEventListener('click',()=>play('path:'+path));return b;
+  })));
   $('gear').replaceChildren(...state.gear.map(id=>{
     const item=core.GEAR[id];const equipped=p[item.slot==='weapon'?'equippedWeapon':'equippedArmor']===id;const btn=element('button','gear-btn equipment-slot',`${equipped?'✓ EQUIPADO · ':''}${item.label} (+${item.bonus})${item.role?' · '+item.role:''}`);
     btn.type='button';btn.disabled=state.dead||state.won||!!(item.role&&p.role!==item.role);
