@@ -160,28 +160,41 @@
   });
   // Side-chamber echoes are optional, one-choice discoveries separate from existing beat rewards.
   const ECHO_SITES=Object.freeze({
-    '1:6,5':Object.freeze({name:'El quinto paso',text:'El eco espera a que la compañía respire al unísono.',choiceA:'memoria',choiceB:'poción'}),
-    '2:5,5':Object.freeze({name:'La bóveda suspendida',text:'Tras el agua inmóvil, una voz ofrece calma o poder.',choiceA:'calma',choiceB:'esencia'}),
-    '3:3,5':Object.freeze({name:'El corredor que vuelve',text:'La inscripción cambia cuando apartas la mirada.',choiceA:'lucidez',choiceB:'pergamino'}),
-    '4:1,7':Object.freeze({name:'El nicho que pronuncia',text:'Una voz ofrece descanso a cambio de que olvidéis su rostro.',choiceA:'cordura',choiceB:'poción'})
+    '1:6,5':Object.freeze({name:'El quinto paso',text:'El eco espera a que la compañía respire al unísono.',choiceB:'Linterna del Quinto Paso',relic:'lantern'}),
+    '2:5,5':Object.freeze({name:'La bóveda suspendida',text:'Tras el agua inmóvil, una voz ofrece calma o poder.',choiceB:'Espejo de Marea',relic:'mirror'}),
+    '3:3,5':Object.freeze({name:'El corredor que vuelve',text:'La inscripción cambia cuando apartas la mirada.',choiceB:'Brújula de Tinta',relic:'compass'}),
+    '4:1,7':Object.freeze({name:'El nicho que pronuncia',text:'Una voz ofrece descanso a cambio de que olvidéis su rostro.',choiceB:'Campana de Nichos Vacíos',relic:'bell'})
   });
+  const RELICS=Object.freeze({lantern:{name:'Linterna del Quinto Paso',use:'Recupera 15 de cordura.'},mirror:{name:'Espejo de Marea',use:'Santuario para la siguiente fase enemiga.'},compass:{name:'Brújula de Tinta',use:'Recupera 2 de lucidez.'},bell:{name:'Campana de Nichos Vacíos',use:'Interrumpe a los enemigos visibles hasta a dos casillas.'}});
   function echoAt(s){return ECHO_SITES[`${s.floor}:${s.x},${s.y}`]||null;}
   function resolveEcho(s,events,choice){
     const id=`${s.floor}:${s.x},${s.y}`,site=ECHO_SITES[id];
     if(!site||s.echoes.includes(id)){report(s,'Aquí no queda ningún eco sin resolver.',events,'warning');return;}
-    s.echoes.push(id);
+    s.echoes.push(id);s.echoChoices.push(`${id}:${choice}`);
     if(choice==='memory'){
       if(s.floor===1)s.lucidity=Math.min(10,s.lucidity+1);
       else if(s.floor===2)s.sanity=clampSanity(s.sanity+8);
       else if(s.floor===3)s.lucidity=Math.min(10,s.lucidity+1);
       else s.sanity=clampSanity(s.sanity+6);
-      report(s,`${site.name}: conservas el recuerdo. ${site.choiceA} queda atrás.`,events,'lore');
+      report(s,`${site.name}: conservas el recuerdo. La memoria permanecerá en la compañía.`,events,'lore');
     }else{
-      if(s.floor===1||s.floor===4)s.potions=Math.min(1000,s.potions+1);
-      else if(s.floor===2)s.ether=Math.min(1000,s.ether+1);
-      else s.scrolls=Math.min(1000,s.scrolls+1);
-      report(s,`${site.name}: tomas ${site.choiceB}. El eco se apaga.`,events,'loot');
+      if(!s.relics.includes(site.relic))s.relics.push(site.relic);
+      report(s,`${site.name}: tomas ${site.choiceB}. ${RELICS[site.relic].use} El eco se apaga.`,events,'loot');
     }
+  }
+  function useRelic(s,events,id,rng){
+    if(!s.relics.includes(id)){report(s,'La reliquia no está en el inventario.',events,'warning');return;}
+    if(id==='lantern')s.sanity=clampSanity(s.sanity+15);
+    else if(id==='mirror')s.ward=3;
+    else if(id==='compass')s.lucidity=Math.min(10,s.lucidity+2);
+    else if(id==='bell'){
+      const targets=s.monsters.filter(m=>m.hp>0&&(m.floor||1)===s.floor&&distance(m,s)<=2&&inLineOfSight(s,m,2));
+      if(!targets.length){report(s,'La campana no encuentra ninguna presencia a la que responder.',events,'warning');return;}
+      for(const m of targets){m.telegraph=false;m.frozen=Math.max(m.frozen||0,1);}
+    }else return;
+    s.relics=s.relics.filter(v=>v!==id);
+    report(s,`${RELICS[id].name}: ${RELICS[id].use} Reliquia consumida.`,events,id==='mirror'?'ward':id==='bell'?'frost':'lore');
+    if(id==='mirror'||id==='bell')enemyTurn(s,events,rng);
   }
   const TRAPS = new Set(['3,7','9,11']);
   // Hidden masonry: discover it by facing a suspicious wall and interacting (E).
@@ -299,7 +312,7 @@
       schema:VERSION, floor:1, x:1,y:1,dir:1,party:HEROES.map(h=>({...h})),selected:0,
       potions:3,ether:2,scrolls:1,key:false,sigil:false,voidHeart:false,finalRune:false,turn:0,won:false,ending:null,dead:false,guard:null,ward:0,
       sanity:100,lucidity:0,tomesRead:[],knowledge:[],witnessed:[],ritualSealed:false,drownedClues:[],drownedRitual:'none',secretsFound:[],gear:[],gearFound:[],gateOpen:false,labyrinthGateOpen:false,disarmedTraps:[],visitedByFloor:{1:['1,1'],2:[],3:[],4:[]},
-      shrines:[],echoes:[],
+      shrines:[],echoes:[],echoChoices:[],relics:[],
       visited:['1,1'],monsters:[...START_MONSTERS,...LOWER_MONSTERS,...LABYRINTH_MONSTERS,...ABYSS_MONSTERS,...COSMIC_ROAMERS].map(m=>({...m})),
       items:['3,11','4,13'],trapsTriggered:[],loreRead:[],
       messages:['Prólogo: la expedición ha desaparecido. Las campanas suenan bajo la tierra. Investiga las inscripciones (I).']
@@ -311,10 +324,12 @@
     silence:Object.freeze({title:'EL SILENCIO',text:'Las campanas cesan. Los nombres olvidados vuelven a la piedra, y la compañía abandona la cripta sin saber qué soñó bajo ella.'}),
     seal:Object.freeze({title:'EL PACTO DE LA MAREA',text:'Los sellos de la Cripta y la Biblioteca responden al último juramento. La marea se repliega. La compañía escapa, pero alguien deberá custodiar el santuario.'}),
     revelation:Object.freeze({title:'EL SUEÑO INVERTIDO',text:'Has escuchado la Marea y comprendido dos manuscritos. El Nombre Anterior reconoce su propio eco en la compañía: una puerta imposible se abre hacia un cielo que no debería existir.'})
+    ,remembrance:Object.freeze({title:'LA CATEDRAL RECUERDA',text:'Habéis conservado los cuatro ecos sin venderlos por poder. Bajo el mar, la catedral pronuncia vuestros nombres verdaderos y abre una salida que no exige sacrificio: por primera vez, la Marea os deja marchar.'})
   });
   function resolveEnding(s){
     if(s.drownedRitual==='listen' && (s.drownedClues||[]).length===2 && (s.lucidity||0)>=4)return 'revelation';
     if(s.drownedRitual==='seal' && s.ritualSealed)return 'seal';
+    if((s.echoChoices||[]).length===4&&(s.echoChoices||[]).every(v=>v.endsWith(':memory'))&&(s.lucidity||0)>=4)return 'remembrance';
     return 'silence';
   }
   const monsterAt = (s,x,y) => s.monsters.find(m=>(m.floor||1)===s.floor && m.x===x && m.y===y && m.hp>0);
@@ -832,6 +847,7 @@
     else if(action==='path:bulwark'||action==='path:edge')choosePath(s,events,action.slice(5));
     else if(action==='shrine:mind'||action==='shrine:ether')shrine(s,events,action.slice(7));
     else if(action==='echo:memory'||action==='echo:material')resolveEcho(s,events,action.slice(5));
+    else if(typeof action==='string'&&action.startsWith('relic:'))useRelic(s,events,action.slice(6),rng);
     else if(action==='attack')attack(s,events,rng);
     else if(action==='guard')guard(s,events,rng);
     else if(action==='interact')interact(s,events);
@@ -875,6 +891,8 @@
     if(s.ritualSealed!==undefined && typeof s.ritualSealed!=='boolean')return false;
     if(s.shrines!==undefined&&(!Array.isArray(s.shrines)||s.shrines.length>4||new Set(s.shrines).size!==s.shrines.length||s.shrines.some(v=>![1,2,3,4].includes(v))))return false;
     if(s.echoes!==undefined&&(!Array.isArray(s.echoes)||s.echoes.length>4||new Set(s.echoes).size!==s.echoes.length||s.echoes.some(v=>!Object.hasOwn(ECHO_SITES,v))))return false;
+    if(s.echoChoices!==undefined&&(!Array.isArray(s.echoChoices)||s.echoChoices.length>4||new Set(s.echoChoices).size!==s.echoChoices.length||s.echoChoices.some(v=>!Object.keys(ECHO_SITES).some(id=>v===id+':memory'||v===id+':material'))))return false;
+    if(s.relics!==undefined&&(!Array.isArray(s.relics)||s.relics.length>4||new Set(s.relics).size!==s.relics.length||s.relics.some(v=>!Object.hasOwn(RELICS,v))))return false;
     const coord=(p,floor)=>Number.isInteger(p.x)&&Number.isInteger(p.y)&&passable(p.x,p.y,floor||1);
     const natural=(v,max=100000)=>Number.isInteger(v)&&v>=0&&v<=max;
     return !!s&&typeof s==='object'&&coord(s,s.floor)&&natural(s.dir,3)&&natural(s.selected,3)&&
@@ -908,7 +926,7 @@
   function importSave(raw){
     if(!raw||typeof raw!=='object')return null;
     const previous=raw.schema||3;
-    const s={...raw,schema:VERSION,shrines:raw.shrines===undefined?[]:raw.shrines,echoes:raw.echoes===undefined?[]:raw.echoes,
+    const s={...raw,schema:VERSION,shrines:raw.shrines===undefined?[]:raw.shrines,echoes:raw.echoes===undefined?[]:raw.echoes,echoChoices:raw.echoChoices===undefined?[]:raw.echoChoices,relics:raw.relics===undefined?[]:raw.relics,
       ending:raw.ending===undefined?(raw.won?'silence':null):raw.ending,
       sanity:raw.sanity===undefined?100:raw.sanity,
       lucidity:raw.lucidity===undefined?0:raw.lucidity,
@@ -973,5 +991,5 @@
     return s;
   }
   return {VERSION,SAVE_KEY,V15_SAVE_KEY,V14_SAVE_KEY,V13_SAVE_KEY,SECRETS,V12_SAVE_KEY,V11_SAVE_KEY,V10_SAVE_KEY,V9_SAVE_KEY,V8_SAVE_KEY,V7_SAVE_KEY,PREVIOUS_SAVE_KEY,V5_SAVE_KEY,LEGACY_SAVE_KEY,V4_SAVE_KEY,LEVEL,LOWER,LABYRINTH,ABYSS,COSMIC_CLUES,FORBIDDEN_TOMES,DROWNED_TEXTS,COSMIC_ENEMIES,ENDINGS,resolveEnding,WIDTH,HEIGHT,DIRS,LORES,TRAPS,GEAR,BESTIARY,PORTCULLIS,PRESSURE_PLATE,gateAt,
-    SPECIALTIES,PATHS,ECHO_SITES,echoAt,threats,tile,wallAt,passable,createGame,monsterAt,dispatch,validGame,importSave};
+    SPECIALTIES,PATHS,ECHO_SITES,RELICS,echoAt,threats,tile,wallAt,passable,createGame,monsterAt,dispatch,validGame,importSave};
 });

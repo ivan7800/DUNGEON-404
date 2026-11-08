@@ -1,3 +1,13 @@
+# v6.4 — Reliquias de eco y la memoria de la Catedral (rama)
+
+- Las cuatro cámaras de eco ahora enfrentan conservar memoria o llevarse una reliquia única de un uso.
+- Linterna (15 cordura), Espejo (amparo de una fase enemiga), Brújula (2 lucidez) y Campana (interrumpe enemigos visibles a dos casillas).
+- El uso de reliquias mágicas consume la respuesta enemiga cuando corresponde; la Campana no se gasta si no encuentra objetivo.
+- Nuevo desenlace «La Catedral recuerda»: conservar los cuatro ecos y terminar con al menos 4 de Lucidez.
+- La pantalla de desenlaces explica la condición; el códice avisa cuando los cuatro recuerdos están preservados.
+- Compatible con guardados de esquema 16: los campos nuevos son opcionales y las partidas antiguas se inicializan sin reliquias ni decisiones de eco.
+- Pruebas ampliadas para efectos, consumo, interrupción, migración y prioridad de finales.
+
 # v6.3 — Ecos de las cámaras sumergidas (rama)
 
 - Cuatro descubrimientos opcionales situados en salas existentes, uno en cada profundidad.

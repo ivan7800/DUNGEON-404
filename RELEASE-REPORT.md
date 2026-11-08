@@ -1,6 +1,16 @@
+# Addendum v6.4 — reliquias de eco y desenlace de la Catedral
+
+Estado: rama de revisión; no publicada ni fusionada en `main`.
+
+Las cuatro cámaras de v6.3 ahora permiten elegir entre conservar un recuerdo o tomar una reliquia única. Linterna: +15 cordura. Espejo: protección para la siguiente fase enemiga. Brújula: +2 lucidez. Campana: interrumpe a los enemigos visibles hasta a dos casillas; si no hay objetivo, no se consume. Espejo y Campana activan la respuesta enemiga; las reliquias inmediatas no.
+
+Conservar los cuatro recuerdos y alcanzar el final con 4 o más de Lucidez desbloquea «La Catedral recuerda». Los finales de revelación y pacto conservan prioridad. `echoChoices` y `relics` son campos opcionales dentro del esquema 16; importar una partida anterior los inicializa vacíos y no modifica su progreso.
+
+Verificación de este addendum: prueba funcional de las cuatro cámaras, elecciones únicas, cuatro efectos, consumo y fallo sin objetivo, nuevo desenlace, prioridad de finales y migración. También se han actualizado la ayuda contextual, inventario, textos del panel de destinos, versión visible y parámetros de caché. No se afirma revisión visual en navegador ni GPU física para esta entrega hasta ejecutar esas comprobaciones.
+
 # Addendum v6.3 — exploración y revisión WebGL
 
-La rama añade cuatro ecos opcionales en cámaras existentes. Cada sala ofrece una elección de memoria o recurso, se registra una sola vez y se conserva en guardados v6.0/v6.1/v6.2 mediante el campo opcional `echoes` sin cambiar el esquema 16.
+La rama añade cuatro ecos opcionales en cámaras existentes. Cada sala ofrece una elección entre memoria y material, se registra una sola vez y se conserva en guardados v6.0/v6.1/v6.2 mediante el campo opcional `echoes` sin cambiar el esquema 16. En v6.4 el material pasa a ser una reliquia única en cada sitio.
 
 WebGL: revisión estática de shaders, creación del contexto, errores GL por frame y recuperación Canvas. No hay GPU física expuesta a este entorno; no se afirma compilación/renderizado real WebGL. La restauración del contexto perdido se resuelve de forma segura con Canvas si el contexto no puede volver a renderizar.
 
