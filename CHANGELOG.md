@@ -1,3 +1,10 @@
+# v6.5 — Interfaz de archivo analógico (rama)
+
+- La interfaz adopta el lenguaje de una cinta de campo: tipografía monoespaciada, sintonía de señal, fósforo turquesa, ámbar y violeta, bordes de monitor y texturas de barrido muy suaves.
+- La identidad de la Catedral, las ilustraciones y la escena de mazmorra conservan sus colores y arte actuales; el tratamiento retro se limita a controles, paneles, diario y códice.
+- El efecto es estático y ligero, sin filtros sobre Canvas/WebGL, fuentes remotas ni cambios de jugabilidad.
+- Se mantienen focos visibles, tamaños táctiles y reglas de movimiento reducido.
+
 # v6.4 — Reliquias de eco y la memoria de la Catedral
 
 - Las cuatro cámaras de eco ahora enfrentan conservar memoria o llevarse una reliquia única de un uso.

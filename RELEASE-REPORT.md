@@ -1,3 +1,9 @@
+# Addendum v6.5 — interfaz analógica de terror cósmico
+
+La interfaz usa etiquetas de archivo/cinta, tipografía monoespaciada en controles y paneles, contraste de fósforo turquesa y ámbar, violeta para lo anómalo y carmesí para peligro. Líneas de barrido sutiles solo aparecen en superficies de interfaz; la escena Canvas/WebGL conserva el arte original. No se añaden fuentes externas, dependencias ni efectos animados.
+
+Verificación local de esta rama: los 47 scripts de prueba JavaScript superados, sintaxis de todos los archivos JavaScript comprobada y `git diff --check` limpio. Las pruebas existentes verifican ruta de victoria, migración de guardados, render WebGL simulado y fallback Canvas. La revisión visual en navegador real queda pendiente: el navegador compartido mostró una copia obsoleta y bloqueó el acceso a archivos locales; no se declara verificada la presentación visual ni el modo WebGL en GPU física.
+
 # Addendum v6.4 — reliquias de eco y desenlace de la Catedral
 
 Las cuatro cámaras de v6.3 ahora permiten elegir entre conservar un recuerdo o tomar una reliquia única. Linterna: +15 cordura. Espejo: protección para la siguiente fase enemiga. Brújula: +2 lucidez. Campana: interrumpe a los enemigos visibles hasta a dos casillas; si no hay objetivo, no se consume. Espejo y Campana activan la respuesta enemiga; las reliquias inmediatas no.
