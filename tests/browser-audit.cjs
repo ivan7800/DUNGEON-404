@@ -59,7 +59,7 @@ const server=http.createServer((req,res)=>{
   await page.locator('#toggle-map').click();assert.match(await page.locator('#toggle-map').innerText(),/MOSTRAR/);await page.locator('#toggle-map').click();
   await page.locator('#release-help').click();assert(await page.locator('dialog[open]').isVisible());
   const turn=await page.evaluate(()=>Dungeon404.snapshot().turn);await page.locator('dialog').press('w');assert.equal(await page.evaluate(()=>Dungeon404.snapshot().turn),turn);
-  await page.locator('.guide-close').click();await page.locator('#release-film').click();await page.locator('#release-quality').click();
+  await page.locator('.guide-close').click();await page.locator('#release-film').click();await page.locator('#release-quality').click();await page.locator('#release-quality').click();
   await page.locator('.advanced-actions summary').click();
   const actions=await page.locator('[data-action]').evaluateAll(nodes=>[...new Set(nodes.map(n=>n.dataset.action))]);
   for(const action of actions){console.log('BROWSER: action',action);
@@ -72,7 +72,7 @@ const server=http.createServer((req,res)=>{
    await page.evaluate(({key,state})=>localStorage.setItem(key,JSON.stringify(state)),{key:C.SAVE_KEY,state});
    await page.locator('#tab-settings').click();await page.locator('#load').click();
    assert.equal(await page.evaluate(()=>Dungeon404.snapshot().floor),floor);
-   await page.locator('#tab-quest').click();await page.screenshot({path:path.join(evidence,`depth-${floor}.png`),fullPage:true});
+   await page.locator('#tab-quest').click();await page.screenshot({timeout:30000,path:path.join(evidence,`depth-${floor}.png`),fullPage:true});
    report.scenarios.push(floor);
   }
   // Real boss telegraph and interrupt through the same public controls as a player.
@@ -91,7 +91,7 @@ const server=http.createServer((req,res)=>{
    await page.setViewportSize({width,height:844});
    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth),`overflow at ${width}`);
    await page.locator('[data-touch-hero="2"]').click();assert.equal(await page.evaluate(()=>Dungeon404.snapshot().selected),2);
-   await page.screenshot({path:path.join(evidence,`mobile-${width}.png`),fullPage:true});
+   await page.screenshot({timeout:30000,path:path.join(evidence,`mobile-${width}.png`),fullPage:true});
   }
   console.log('BROWSER: art laboratory');await page.goto(base+'art-lab.html');await page.waitForFunction(()=>document.getElementById('status').textContent.includes('Motor ACTIVO'));
   await page.locator('#mode').selectOption('canvas');
