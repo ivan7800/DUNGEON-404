@@ -24,14 +24,15 @@ const server=http.createServer((req,res)=>{
  try{
   browser=await chromium.launch({headless:true,...(process.env.D404_CHROMIUM_PATH?{executablePath:process.env.D404_CHROMIUM_PATH}:{}),args:['--no-sandbox','--disable-dev-shm-usage','--enable-unsafe-swiftshader','--use-angle=swiftshader']});
   report.browser=browser.version();
+  console.log('BROWSER: launched',report.browser);
   const context=await browser.newContext({viewport:{width:1440,height:1100},acceptDownloads:true});
   const page=await context.newPage();page.setDefaultTimeout(10000);page.setDefaultNavigationTimeout(30000);
   page.on('pageerror',error=>report.errors.push(String(error)));
   page.on('response',response=>{if(response.status()>=400)report.failedRequests.push(response.url()+' '+response.status());});
   await page.addInitScript(()=>localStorage.setItem('d404-presentation',JSON.stringify({film:true,quality:'economy'})));
-  await page.goto(base);await page.waitForFunction(()=>window.Dungeon404);
+  console.log('BROWSER: opening game');await page.goto(base);await page.waitForFunction(()=>window.Dungeon404);
   report.webgl=(await page.locator('#graphics-status').innerText()).includes('WebGL 3D');
-  await page.locator('#quick-sound').click();
+  console.log('BROWSER: direct controls');await page.locator('#quick-sound').click();
   assert.equal(await page.locator('#quick-sound').getAttribute('aria-pressed'),'true');
   await page.locator('#quick-save').click();
   assert(await page.evaluate(key=>!!localStorage.getItem(key),C.SAVE_KEY));
@@ -42,7 +43,7 @@ const server=http.createServer((req,res)=>{
    await page.locator('#tab-'+pageName).click();assert(await page.locator('#page-'+pageName).isVisible());
   }
   // The download and reimport use an isolated browser profile, never the player's save.
-  const pending=page.waitForEvent('download');await page.locator('#export-save').click();const download=await pending;
+  console.log('BROWSER: JSON download and import');const pending=page.waitForEvent('download');await page.locator('#export-save').click();const download=await pending;
   const exported=path.join(evidence,'roundtrip.json');await download.saveAs(exported);
   const envelope=JSON.parse(fs.readFileSync(exported,'utf8'));assert(C.importSave(envelope.game));report.downloads=true;
   page.once('dialog',dialog=>dialog.accept());await page.locator('#import-save-file').setInputFiles(exported);
@@ -59,12 +60,12 @@ const server=http.createServer((req,res)=>{
   await page.locator('.guide-close').click();await page.locator('#release-film').click();await page.locator('#release-quality').click();
   await page.locator('.advanced-actions summary').click();
   const actions=await page.locator('[data-action]').evaluateAll(nodes=>[...new Set(nodes.map(n=>n.dataset.action))]);
-  for(const action of actions){
+  for(const action of actions){console.log('BROWSER: action',action);
    const button=page.locator(`[data-action="${action}"]`).first();
    if(!await button.isVisible())await page.locator('#tab-lore').click();
    await button.click();report.buttons.push(action);
   }
-  for(let floor=1;floor<=4;floor++){
+  for(let floor=1;floor<=4;floor++){console.log('BROWSER: floor',floor);
    const state=C.createGame();state.floor=floor;state.visited=['1,1'];state.visitedByFloor[floor]=state.visited;
    await page.evaluate(({key,state})=>localStorage.setItem(key,JSON.stringify(state)),{key:C.SAVE_KEY,state});
    await page.locator('#tab-settings').click();await page.locator('#load').click();
@@ -73,7 +74,7 @@ const server=http.createServer((req,res)=>{
    report.scenarios.push(floor);
   }
   // Real boss telegraph and interrupt through the same public controls as a player.
-  const state=C.createGame(),boss=state.monsters.find(m=>m.kind==='warden');
+  console.log('BROWSER: boss scenario');const state=C.createGame(),boss=state.monsters.find(m=>m.kind==='warden');
   Object.assign(state,{x:4,y:3,dir:1,selected:1});Object.assign(boss,{x:5,y:3,hp:20,phaseAwakened:true,telegraph:true});
   state.monsters=[boss];state.visited=['4,3'];state.visitedByFloor[1]=state.visited;
   await page.evaluate(({key,state})=>localStorage.setItem(key,JSON.stringify(state)),{key:C.SAVE_KEY,state});
@@ -89,7 +90,7 @@ const server=http.createServer((req,res)=>{
    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth),`overflow at ${width}`);
    await page.screenshot({path:path.join(evidence,`mobile-${width}.png`),fullPage:true});
   }
-  await page.goto(base+'art-lab.html');await page.waitForFunction(()=>document.getElementById('status').textContent.includes('Motor ACTIVO'));
+  console.log('BROWSER: art laboratory');await page.goto(base+'art-lab.html');await page.waitForFunction(()=>document.getElementById('status').textContent.includes('Motor ACTIVO'));
   await page.locator('#mode').selectOption('canvas');
   for(const floor of ['1','2','3','4'])await page.locator('#floor').selectOption(floor);
   for(const kind of ['crawler','specter','warden','drowned','tideborn','librarian','archivist','firstname'])await page.locator('#creature').selectOption(kind);
@@ -99,5 +100,5 @@ const server=http.createServer((req,res)=>{
   assert.equal(fs.readFileSync(path.join(evidence,'lab.png')).subarray(1,4).toString(),'PNG');
   assert.deepEqual(report.errors,[]);assert.deepEqual(report.failedRequests,[]);
   fs.writeFileSync(path.join(evidence,'browser-report.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));console.log('Evidence:',evidence);
- }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve));}
-})().catch(error=>{console.error('::error::'+String(error.stack||error).replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A'));process.exitCode=1;});
+ }catch(error){report.failure=String(error.stack||error);throw error;}finally{fs.writeFileSync(path.join(evidence,'browser-report.json'),JSON.stringify(report,null,2));server.closeAllConnections?.();server.close();if(browser)await browser.close();}
+})().catch(error=>{console.error('::error::'+String(error.stack||error).replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A'));process.exit(1);});
