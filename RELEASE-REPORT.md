@@ -1,6 +1,6 @@
 # Addendum v6.1 — revisión
 
-La rama v6.1 incorpora juramentos al nivel 2 y altares de entrada con decisiones de recurso. Conservar el esquema 16 permite importar guardados v6.0; el nuevo campo `shrines` se inicializa vacío y `path` es opcional. La revisión WebGL en GPU, exportación de JSON descargado e importación de archivo y móvil físico continúan pendientes. Los resultados de comprobación se consignarán en el PR.
+La rama v6.1 incorpora juramentos al nivel 2 y altares de entrada con decisiones de recurso. Conservar el esquema 16 permite importar guardados v6.0; el nuevo campo `shrines` se inicializa vacío y `path` es opcional. La revisión WebGL en GPU, exportación de JSON descargado e importación de archivo y móvil físico continúan pendientes. Verificación local: 45 scripts JavaScript y sintaxis del motor e interfaz superados; recorrido de victoria existente superado. La pantalla de inicio v6.1 se abrió en Chrome compartido y mostró el altar y las cuatro pestañas. El flujo de descarga e importación JSON, WebGL en GPU y móvil físico siguen sin comprobación real.
 
 ---
 

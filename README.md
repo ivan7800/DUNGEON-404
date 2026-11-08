@@ -4,7 +4,7 @@ Dungeon crawler por casillas y acciones: cuatro aventureros descienden por cated
 
 La campaña continúa la progresión y los sistemas de las versiones v4.2 y v4.3.
 
-La versión v6.0 está publicada. Esta rama prepara v6.1; consulta [RELEASE-REPORT.md](RELEASE-REPORT.md) para el alcance y los límites verificados.
+La versión v6.0 está publicada. Esta propuesta prepara v6.1; consulta [RELEASE-REPORT.md](RELEASE-REPORT.md) para el alcance y los límites verificados.
 
 ## Iniciar
 
