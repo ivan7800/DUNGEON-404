@@ -11,7 +11,7 @@ const TORCHES=[
   {x:5.45,y:9.38},{x:4.53,y:11.55},{x:8.52,y:13.35},{x:11.53,y:13.57}
 ];
 function noise(seed){let v=seed|0;return ()=>{v^=v<<13;v^=v>>>17;v^=v<<5;return (v>>>0)/4294967296;};}
-function texture(type){
+function texture(type,cathedral=false,depth=1){
   const c=document.createElement('canvas');c.width=c.height=128;
   const x=c.getContext('2d'),rand=noise(type==='door'?2929:type==='moss'?4188:type==='crypt'?8161:type==='abyss'?11659:1447);
   x.fillStyle=type==='door'?'#242326':type==='moss'?'#282f2d':type==='crypt'?'#332d3e':type==='abyss'?'#203e3b':'#343b3e';x.fillRect(0,0,128,128);
@@ -52,11 +52,34 @@ function texture(type){
     x.strokeStyle='rgba(213,146,84,.7)';
     for(let i=0;i<8;i++){const a=i*TAU/8;x.beginPath();x.moveTo(64+32*Math.cos(a),64+32*Math.sin(a));x.lineTo(64+38*Math.cos(a),64+38*Math.sin(a));x.stroke();}
   }
+  if(cathedral){
+    // Original lancet tracery and fluted columns, painted into the raycaster's wall atlas.
+    x.fillStyle='#091d22';x.beginPath();x.moveTo(34,108);x.lineTo(34,57);x.quadraticCurveTo(34,35,64,13);x.quadraticCurveTo(94,35,94,57);x.lineTo(94,108);x.closePath();x.fill();
+    const glow=x.createLinearGradient(34,0,94,128);glow.addColorStop(0,depth===3?'#6e5795':'#348e8a');glow.addColorStop(1,'#15343f');x.fillStyle=glow;x.fill();
+    x.strokeStyle='#a99b72';x.lineWidth=3;x.stroke();
+    x.strokeStyle='#1b2929';x.lineWidth=3;x.beginPath();x.moveTo(64,17);x.lineTo(64,108);x.moveTo(35,66);x.lineTo(93,66);x.moveTo(35,87);x.lineTo(93,87);x.stroke();
+    x.strokeStyle='#8f987f';x.lineWidth=2;x.beginPath();x.arc(64,53,13,0,TAU);x.stroke();
+    if(depth===2){
+      for(const px of [18,100])for(let shelf=0;shelf<4;shelf++){
+        x.fillStyle='#7e7760';x.fillRect(px,37+shelf*20,10,2);
+        for(let j=0;j<3;j++){x.fillStyle=j%2?'#716951':'#40595b';x.fillRect(px+j*3,25+shelf*20,2,12);}
+      }
+    }
+    if(depth===4){
+      x.fillStyle='#b7b396';for(const px of [21,107])for(let h=0;h<4;h++){x.beginPath();x.ellipse(px,37+h*21,5,6,0,0,TAU);x.fill();x.fillStyle='#182c2e';x.fillRect(px-3,36+h*21,2,2);x.fillRect(px+1,36+h*21,2,2);x.fillStyle='#b7b396';}
+    }
+    for(const px of [9,115]){x.fillStyle='#46534c';x.fillRect(px,4,5,121);x.fillStyle='#aca17b';for(const py of [12,32,102,119])x.fillRect(px-3,py,11,3);}
+  }
   return c;
 }
 function createRenderer(canvas,mapCanvas,core){
   const ctx=canvas.getContext('2d',{alpha:false}),mc=mapCanvas.getContext('2d');
   const mats={stone:texture('stone'),moss:texture('moss'),door:texture('door'),crypt:texture('crypt'),abyss:texture('abyss')};
+  const bays={1:texture('stone',true),2:texture('abyss',true,2),3:texture('crypt',true,3),4:texture('crypt',true,4)};
+  const creatureArt={};
+  if(typeof Image!=='undefined')for(const kind of ['lurker','crawler','warden','specter','king','archivist','firstname','starseer','chorus','cartographer','voidmoth']){
+    const image=new Image();image.src='assets/art/creature-'+kind+'.svg';creatureArt[kind]=image;
+  }
   const W=canvas.width,H=canvas.height;
   const FOV=Math.PI/2.85;
   const depths=new Float32Array(W);
@@ -126,6 +149,17 @@ function createRenderer(canvas,mapCanvas,core){
   function enemySprite(m,cam,t){
     const p=project(cam,m.x+.5,m.y+.5);
     if(!spriteVisible(p))return;
+    const art=creatureArt[m.kind];
+    if(art?.complete&&art.naturalWidth){
+      const size=Math.min(H*.94,H*.70/Math.max(.4,p.corrected));
+      const x=p.x-size*.4,y=H*.52-size*.64+Math.sin(t*.002+m.x)*2;
+      ctx.save();ctx.fillStyle='rgba(0,5,10,.7)';ctx.beginPath();ctx.ellipse(p.x,y+size*.92,size*.34,size*.075,0,0,TAU);ctx.fill();
+      if(m.frozen){ctx.globalAlpha=.75;ctx.shadowColor='#a5e4ea';ctx.shadowBlur=12;}
+      ctx.drawImage(art,x,y,size*.8,size);
+      ctx.globalAlpha=1;
+      if(m.telegraph){ctx.strokeStyle='#f0aa9d';ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,y+size*.25,size*.2,0,TAU);ctx.stroke();}
+      ctx.fillStyle='#071316';ctx.fillRect(p.x-size*.24,y-9,size*.48,4);ctx.fillStyle=m.telegraph?'#e09583':'#a0b99b';ctx.fillRect(p.x-size*.24,y-9,size*.48*m.hp/m.max,4);ctx.restore();return;
+    }
     const scale=Math.min(2.2,1/Math.max(.25,p.corrected));
     const size=H*.73*scale;
     const bob=Math.sin(t*.002+m.x*4)*4*scale;
@@ -239,7 +273,7 @@ function createRenderer(canvas,mapCanvas,core){
       const top=(H-wallHeight)/2;
       const isGate=core.gateAt(hit.mapX,hit.mapY,s.floor);
       const isDoor=core.tile(hit.mapX,hit.mapY,s.floor)==='X'||isGate;
-      const mat=isDoor?mats.door:(hit.mapX*9+hit.mapY*11)%9<2?mats.moss:s.floor===2?mats.crypt:s.floor===3?mats.abyss:s.floor===4?mats.crypt:mats.stone;
+      const mat=isDoor?mats.door:(hit.mapX+hit.mapY)%3===0?bays[s.floor]:(hit.mapX*9+hit.mapY*11)%9<2?mats.moss:s.floor===2?mats.abyss:s.floor===3?mats.crypt:s.floor===4?mats.crypt:mats.stone;
       const lift=isGate&&open?gateProgress:0;
       const shownHeight=Math.max(0,wallHeight*(1-lift));
       // Rising portcullis: draw only the still-visible lower texture strip, lifted upward.

@@ -20,44 +20,11 @@ jobs:
           node --check art-lab.js
           node --check glb-model.js
           node --check presentation.js
+          node --check interface.js
           python3 -m py_compile launch.py
           bash -n INICIAR-LINUX.sh
       - name: Run functional checks
         run: |
-          node tests/smoke.js
-          node tests/v09.js
-          node tests/v10.js
-          node tests/v11.js
-          node tests/v12.js
-          node tests/v13.js
-          node tests/v14.js
-          node tests/v15.js
-          node tests/v16.js
-          node tests/playthrough.js
-          node tests/v21-renderer.js
-          node tests/v22-renderer.js
-          node tests/v23-art.js
-          node tests/v25-audio.js
-          node tests/v26-visual.js
-          node tests/v27-animation.js
-          node tests/v28-sculpture.js
-          node tests/v29-art-lab.js
-          node tests/v30-bestiary.js
-          node tests/v31-showcase.js
-          node tests/v32-glb.js
-          node tests/v33-creatures.js
-          node tests/v34-production.js
-          node tests/v35-cosmic.js
-          node tests/v36-madness.js
-          node tests/v37-rituals.js
-          node tests/v38-creatures.js
-          node tests/v39-drowned.js
-          node tests/v40-endings.js
-          node tests/v41-atmosphere.js
-          node tests/v42-premium.js
-          node tests/v43-living-abyss.js
-          node tests/v44-unspeakable.js
-          node tests/v45-creature-motion.js
-          node tests/v50-release.js
-          node tests/v52-adventure-route.js
-          node tests/v53-atmosphere.js
+          for test in tests/*.js; do
+            node "$test"
+          done

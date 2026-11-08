@@ -96,11 +96,48 @@ function createRenderer(canvas,mapCanvas,core){
  else if(side===1){a=[x+1,0,z+1];b=[x+1,2,z+1];c=[x,2,z+1];d=[x,0,z+1];n=[0,0,-1];}
  else if(side===2){a=[x,0,z+1];b=[x,2,z+1];c=[x,2,z];d=[x,0,z];n=[1,0,0];}
  else{a=[x+1,0,z];b=[x+1,2,z];c=[x+1,2,z+1];d=[x+1,0,z+1];n=[-1,0,0];}quad(arr,a,b,c,d,n,m);}
+ // Wall-mounted architectural bays: cut lancet glass, clustered columns and depth-specific furnishings.
+ function cathedralBay(out,x,z,side,f){
+  const local=[];
+  for(const u of [.055,.945]){
+   box(local,u,.03,.035,.075,1.76,.075,8);
+   for(const h of [.1,.35,1.35,1.68])box(local,u,h,.055,.12,.045,.11,14);
+  }
+  const path=[[.24,.45],[.24,1.18],[.27,1.38],[.34,1.56],[.5,1.83],[.66,1.56],[.73,1.38],[.76,1.18],[.76,.45]];
+  for(let i=0;i<path.length-1;i++){
+   const a=path[i],b=path[i+1],cx=.5,cy=1.05;
+   const inner=p=>[cx+(p[0]-cx)*.86,cy+(p[1]-cy)*.91,.058];
+   quad(local,[a[0],a[1],.06],[b[0],b[1],.06],inner(b),inner(a),[0,0,1],f===4?13:14);
+   put(local,[cx,cy,.018],[0,0,1],[.5,.5],f===3?12:18);
+   put(local,inner(a).map((v,j)=>j===2?.018:v),[0,0,1],[0,0],f===3?12:18);
+   put(local,inner(b).map((v,j)=>j===2?.018:v),[0,0,1],[1,1],f===3?12:18);
+  }
+  box(local,.5,.48,.072,.028,1.13,.018,8);
+  for(const h of [.72,1.02,1.29])box(local,.5,h,.072,.43,.025,.018,8);
+  if(f===2){ // Books salvaged from a drowned scriptorium, all flush with the wall.
+   for(const u of [.16,.84])for(let shelf=0;shelf<4;shelf++){
+    box(local,u,.2+shelf*.3,.085,.13,.035,.14,9);
+    for(let j=0;j<3;j++)box(local,u-.04+j*.04,.235+shelf*.3,.065,.025,.14+(j%2)*.06,.09,j%2?3:20);
+   }
+  }else if(f===4){
+   for(const u of [.15,.85])for(let h=0;h<5;h++)ellipsoid(local,u,.3+h*.25,.09,.046,.058,.038,13,3,6);
+  }else if(f===3){
+   for(let j=0;j<12;j++){
+    const a=j*Math.PI/6;box(local,.5+Math.cos(a)*.19,1.08+Math.sin(a)*.19,.088,.022,.033,.02,14);
+   }
+  }
+  for(let i=0;i<local.length;i+=9){
+   const u=local[i],h=local[i+1],v=local[i+2],nx=local[i+3],ny=local[i+4],nz=local[i+5];
+   const point=side===0?[x+u,h,z+v]:side===1?[x+1-u,h,z+1-v]:side===2?[x+v,h,z+1-u]:[x+1-v,h,z+u];
+   const normal=side===0?[nx,ny,nz]:side===1?[-nx,ny,-nz]:side===2?[nz,ny,-nx]:[-nz,ny,nx];
+   out.push(...point,...normal,local[i+6],local[i+7],local[i+8]);
+  }
+ }
  function floorMesh(f){const out=[];for(let z=0;z<core.HEIGHT;z++)for(let x=0;x<core.WIDTH;x++){
  if(core.tile(x,z,f)==='#')continue;
  quad(out,[x,0,z+1],[x,0,z],[x+1,0,z],[x+1,0,z+1],[0,1,0],1);
  quad(out,[x,2,z],[x,2,z+1],[x+1,2,z+1],[x+1,2,z],[0,-1,0],2);
- for(const [i,dx,dz] of [[0,0,-1],[1,0,1],[2,-1,0],[3,1,0]]){if(core.tile(x+dx,z+dz,f)==='#')wall(out,x,z,i,0);}
+ for(const [i,dx,dz] of [[0,0,-1],[1,0,1],[2,-1,0],[3,1,0]]){if(core.tile(x+dx,z+dz,f)==='#'){wall(out,x,z,i,0);if((x+z)%2===0)cathedralBay(out,x,z,i,f);}}
  }
   // Thin pointed ribs replace the bulky floating lintels; the ceiling line stays readable.
   for(let z=1;z<core.HEIGHT-1;z++)for(let x=1;x<core.WIDTH-1;x++){
@@ -766,7 +803,7 @@ function createRenderer(canvas,mapCanvas,core){
   gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(scene),gl.DYNAMIC_DRAW);gl.drawArrays(gl.TRIANGLES,0,scene.length/9);
   const error=gl.getError?.();if(error&&error!==gl.NO_ERROR)throw Error(`WebGL draw error: 0x${error.toString(16)}`);
  }
- return {renderWorld,renderMap:mapRenderer.renderMap,backend:'WebGL 3D — Midnight Terror v5.3: haunted corridors',diagnostics:{floorAtmospheres:true,blackWater:true,cinematicImpact:true,tonemapping:true,dreadVisuals:true,dreadApparitions:true,openingApparition:true,wallMountedTorches:true,scarredStone:true,bloodTrail:true,boneDebris:true,pointedRibs:true,threatTelegraphs:true,ritualVisualState:true,wetStone:true,arcaneVeins:true,shaderLinked:true,materials:23,creatureAnimation:true,shaderCompiled:true,drawChecked:true,architecturalReliefs:true,combatMotion:true,ambientMotes:true,runicReliefs:true,creatureAttackProfiles:true,cosmicCreaturePose:true,spellTrajectories:true,sculptedCreatures:true,facetedShrine:true,gothicRelief:true,artLabReady:true,gothicShowcase:true,ritualGallery:true,glbStudio:true}};
+ return {renderWorld,renderMap:mapRenderer.renderMap,backend:'WebGL 3D — La Catedral de la Marea v6.0',diagnostics:{cathedralBays:true,depthFurnishings:true,floorAtmospheres:true,blackWater:true,cinematicImpact:true,tonemapping:true,dreadVisuals:true,dreadApparitions:true,openingApparition:true,wallMountedTorches:true,scarredStone:true,bloodTrail:true,boneDebris:true,pointedRibs:true,threatTelegraphs:true,ritualVisualState:true,wetStone:true,arcaneVeins:true,shaderLinked:true,materials:23,creatureAnimation:true,shaderCompiled:true,drawChecked:true,architecturalReliefs:true,combatMotion:true,ambientMotes:true,runicReliefs:true,creatureAttackProfiles:true,cosmicCreaturePose:true,spellTrajectories:true,sculptedCreatures:true,facetedShrine:true,gothicRelief:true,artLabReady:true,gothicShowcase:true,ritualGallery:true,glbStudio:true}};
 }
 root.Dungeon3DRenderer={createRenderer};
 })(typeof globalThis!=='undefined'?globalThis:this);

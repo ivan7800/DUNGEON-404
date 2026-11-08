@@ -1,31 +1,31 @@
-> Documento conceptual histórico. Para el alcance implementado actual consulta README.md y RELEASE-REPORT.md. Los actos pendientes aquí descritos no son un inventario actualizado de la campaña.
+# La Catedral de la Marea · Dirección de diseño v6.0
 
-# DUNGEON 404 — The Cosmic Descent · Biblia de diseño v3.5
+Cuatro expedicionarios descienden bajo una ciudad sin nombre. Los custodios levantaron catedrales alrededor del Nombre Anterior, una conciencia fosilizada en la arquitectura. Cuando el mar cubrió los campanarios, algo siguió rezando debajo.
 
-## Principio
-Juego original de horror cósmico. No se reutilizan textos, traducciones, personajes gráficos ni recursos de terceros. Referentes temáticos: narrativa de exploración prohibida de H. P. Lovecraft, RPG por casillas clásico.
+## Lenguaje visual
 
-## Premisa
-Cuatro investigadores descienden tras una expedición desaparecida bajo una ciudad sin nombre. Los custodios construyeron las criptas para mantener silenciado al Nombre Anterior, una conciencia fosilizada en la propia arquitectura. Los protagonistas deben decidir qué precio tiene descubrir la verdad.
+- El sello es un ojo encerrado en un hexágono, atravesado por el triángulo y los ejes de una carta náutica. Significa conocimiento sellado, orientación y vigilancia.
+- Piedra negra y hierro para la estructura; hueso y latón para memoria, juramentos y reliquias.
+- Turquesa para la marea y la orientación; violeta para las grietas; carmesí para peligro. El texto usa hueso claro y la interfaz evita depender sólo del color.
+- Retratos e ilustraciones de criaturas son grabados vectoriales originales. WebGL combina arquitectura construida y las esculturas GLB existentes.
 
-## Acto I — La Cripta de los Susurros (implementación v3.5)
-- Nuevo prólogo y nombres propios de tres enemigos: Penitente sin rostro, Larva del coro y Confesor desollado.
-- Tres testimonios investigables, en (5,1), (7,5), (3,11).
-- Cordura compartida de 0–100: visiones de nuevos tipos de criaturas a ≤2 casillas y lectura de testimonios consumen cordura; descansar en la primera planta recupera cuatro puntos si es seguro.
-- Rito opcional del silencio ante (3,11), requiere testimonios «custodians» y «seal». Recompensa: +18 cordura y +2 esencias, una vez.
-- Las opciones de horror **no bloquean** la ruta de victoria de la campaña heredada.
+## Cuatro profundidades implementadas
 
-## Actos II–III (diseño, NO IMPLEMENTADOS)
-- Biblioteca Sumergida: agua dinámica, manuscritos, criaturas anfibias, jefe Bibliotecario de las Mil Lenguas.
-- Geometría Muerta: conexiones no euclidianas explícitas, mapas inestables y jefe Arquitecto Ciego.
-- Estrella Muerta: rituales con consecuencias, entidad final El Heraldo del Nombre Anterior.
+| Profundidad | Identidad | Decisiones |
+| --- | --- | --- |
+| Cripta de los Susurros | Sepulcros, columnas y vanos apuntados | Testimonios, rito y llave |
+| Biblioteca Sumergida | Luz de marea, libros y agua negra en WebGL | Manuscritos y decisión del altar |
+| Laberinto Olvidado | Astrolabios, grietas y trazos violetas | Sigilo, equipo y Corazón |
+| Osario del Primer Nombre | Hueso, ceniza y luz del sello | Runa final y destino |
 
-## Reglas de producción
-- No copiar material protegido de adaptaciones o traducciones de los Mitos de Cthulhu.
-- Verificar en navegador real el modo WebGL antes de reclamar calidad visual 3D.
-- Mantener guardados anteriores e incluir pruebas de migración.
-- No usar cordura para sabotear controles, partidas o acceso a información básica.
-- Asegurar al menos una ruta de victoria accesible con pistas legibles.
+## Reglas de experiencia
 
-## Próximo hito v3.6
-Cordura individual, efectos perceptivos distinguibles de amenazas reales y diario de narrativa persistente; pruebas de balance y accesibilidad.
+Las acciones de combate deben tener costes y respuestas legibles. La preparación de ataques crea oportunidades para la interrupción de Mara, la guardia de Aldric y las artes de los conjuradores. La barra de amenaza informa sobre el alcance real y las paredes bloquean sus pronósticos.
+
+La investigación continúa siendo opcional para la victoria estándar, pero modifica rituales, recursos y desenlaces. La cordura nunca sabotea los controles ni vuelve falsos los indicadores. Los secretos enriquecen las rutas sin exigir una guía externa para terminar.
+
+## Alcance artístico real
+
+Hay once ilustraciones de criaturas, cuatro retratos y un sello nuevos. Los vanos y los muebles de WebGL son geometría original construida por código; los seis GLB anteriores se conservan. No se anuncian nuevos niveles, cinemáticas, PBR ni animación esquelética.
+
+Consulta RELEASE-REPORT.md para la evidencia de comprobación, las limitaciones de WebGL y la revisión pendiente en hardware físico.
