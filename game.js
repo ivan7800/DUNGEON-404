@@ -105,7 +105,7 @@ function play(action){
   }
   const events=core.dispatch(state,action);
   const important=[...events].reverse().find(e=>['hurt','attack','spell','heal','loot','victory','defeat','level','frost','ward'].includes(e.effect));
-  if(important){effect=important.effect;effectUntil=performance.now()+220;}
+  if(important){effect=important.effect;effectUntil=performance.now()+420;}
   if(events.length)beep((important||events.at(-1)).effect);
   updateAudioFloor();
   renderUI();

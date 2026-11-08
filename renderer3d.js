@@ -334,6 +334,12 @@ function createRenderer(canvas,mapCanvas,core){
     box(scene,x+Math.cos(angle)*.13,.045,z+Math.sin(angle)*.13,.055,.055,.055,14);
    }
   }
+  // Phase II boss sigils pulse on the floor; prepared attacks burn carmine.
+  for(const m of s.monsters){if(m.hp<=0||(m.floor||1)!==s.floor||!m.phaseAwakened)continue;
+   const pulse=.5+.5*Math.sin(currentTime*.006),r=.30+.08*pulse,mat=m.telegraph?21:19;
+   floorDisc(scene,m.x+.5,.025,m.y+.5,r,r,mat,20);
+   floorDisc(scene,m.x+.5,.028,m.y+.5,r*.68,r*.68,mat,16);
+  }
   // Distinct procedural creature silhouettes. Animation is purely visual: engine rules unchanged.
   const hitFlash=effect&&/attack|hit|spell|frost|pulse|ward/i.test(String(effect));
   const dreadIntensity=Math.max(0,Math.min(1,(65-(Number.isFinite(s.sanity)?s.sanity:100))/65));

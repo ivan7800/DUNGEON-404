@@ -1,0 +1,11 @@
+'use strict';
+const assert=require('node:assert/strict');const C=require('../engine.js');
+const s=C.createGame();s.floor=4;s.x=3;s.y=5;s.dir=1;s.turn=2;
+const boss=s.monsters.find(m=>m.kind==='firstname');s.monsters=[boss];Object.assign(boss,{floor:4,x:5,y:5,hp:50,max:100,damage:30});
+const hp=s.party.map(p=>p.hp);const first=C.dispatch(s,'guard',()=>.5);
+assert.equal(boss.phaseAwakened,true);assert.equal(boss.telegraph,true);assert(first.some(e=>e.text.includes('FASE II')));
+assert(C.threats(s).some(t=>t.name===boss.name&&t.danger),'phase II reach must be forecast at two clear cells');
+assert.deepEqual(s.party.map(p=>p.hp),hp,'warning turn cannot deal the prepared hit');
+C.dispatch(s,'guard',()=>.5);assert(s.party.some((p,i)=>p.hp<hp[i]),'prepared phase II strike resolves from two cells');
+const blocked=C.createGame();blocked.floor=4;blocked.x=4;blocked.y=2;const far=blocked.monsters.find(m=>m.kind==='firstname');blocked.monsters=[far];far.floor=4;far.x=6;far.y=2;far.hp=40;far.max=100;far.phaseAwakened=true;assert.equal(C.threats(blocked).length,0,'walls block phase II attack preview');
+console.log('v6.2 boss phase: warning, ranged phase-II strike and obstruction forecast passed');
