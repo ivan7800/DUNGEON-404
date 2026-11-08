@@ -20,7 +20,7 @@ Necesitas Python 3 y un navegador moderno. Sin cuentas, claves, dependencias de 
 
 Piedra oscura, hueso tallado, latón envejecido y luz de marea. Un sello original une el nombre de la expedición, cuatro retratos y once ilustraciones vectoriales de criaturas en Canvas y cuatro relieves arquitectónicos distintos: sepulcro, biblioteca inundada, astrolabio y osario. Se pueden regenerar con `python3 tools/create-environment-art.py`. La arquitectura WebGL incorpora vanos de arco apuntado, tracerías y columnas: libros en la Biblioteca, marcas de astrolabio en el Laberinto y nichos óseos en el Osario.
 
-La vista ocupa el centro. La compañía, el mapa y la cordura permanecen accesibles; el códice reúne Juramento, Inventario, Códice y Ajustes y partida. Las artes y recursos adicionales se despliegan bajo las cuatro acciones principales. El diseño se adapta a una columna y retratos en dos columnas en pantallas estrechas.
+La vista ocupa el centro. La compañía, el mapa y la cordura permanecen accesibles; el códice reúne Juramento, Inventario, Códice y Ajustes y partida. Las artes y recursos adicionales se despliegan bajo las cuatro acciones principales. En pantallas estrechas, un selector de los cuatro héroes con PV/PM aparece junto a las acciones; permite cambiar de personaje sin desplazarse hasta el final de la partida.
 
 El modo Canvas conserva el arte procedural como recuperación si no carga una ilustración. WebGL mantiene las seis esculturas GLB y sus animaciones procedurales; esta revisión no incorpora rig esquelético ni texturas PBR. Las ilustraciones nuevas son SVG originales editables, sin fuentes ni servicios remotos.
 

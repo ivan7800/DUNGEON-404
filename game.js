@@ -143,6 +143,7 @@ function heroNode(hero,index){
 }
 function renderUI(){
   const focusedHero=document.activeElement?.dataset.hero;
+  const focusedTouchHero=document.activeElement?.dataset.touchHero;
   const dirs=['NORTE','ESTE','SUR','OESTE'];
   $('location').textContent=`PROFUNDIDAD ${['','I','II','III','IV'][state.floor]} · ${dirs[state.dir]} · TURNO ${state.turn}`;
   $('secrets-status').textContent=`SECRETOS DESCUBIERTOS: ${state.secretsFound.length}/8 · Pulsa E frente a paredes sospechosas.`;
@@ -169,7 +170,15 @@ function renderUI(){
   if(ending){$('ending-title').textContent=ending.title;$('ending-text').textContent=ending.text;}
   $('ending-omens').textContent=state.won?'El destino se ha cumplido.':(state.echoChoices||[]).filter(v=>v.endsWith(':memory')).length===4?'Los cuatro recuerdos están a salvo. Conserva al menos 4 de Lucidez: esta ruta secreta prevalece sobre los demás desenlaces.':state.drownedRitual==='seal'?'Has sellado la Marea. El juramento de la Cripta también importa.':state.drownedRitual==='listen'?'Has escuchado la Marea. El conocimiento y la Lucidez abrirán o cerrarán una ruta secreta.':'La Marea todavía espera una decisión.';
   $('party').replaceChildren(...state.party.map(heroNode));
+  $('touch-party').replaceChildren(...state.party.map((hero,index)=>{
+    const b=element('button','touch-hero'+(index===state.selected?' selected':''));
+    b.type='button';b.dataset.touchHero=String(index);b.setAttribute('aria-pressed',String(index===state.selected));
+    b.setAttribute('aria-label',`${hero.name}, ${hero.role}, nivel ${hero.level}. ${hero.hp} de ${hero.max} PV${hero.maxMana?`, ${hero.mana} de ${hero.maxMana} PM`:''}`);
+    b.append(element('strong','',hero.name),element('span','',`${hero.hp}/${hero.max} PV`),element('small','',hero.maxMana?`${hero.mana}/${hero.maxMana} PM`:hero.role));
+    b.addEventListener('click',()=>{state.selected=index;renderUI();});return b;
+  }));
   if(focusedHero!==undefined)$('party').querySelector('[data-hero="'+focusedHero+'"]').focus({preventScroll:true});
+  if(focusedTouchHero!==undefined)$('touch-party').querySelector('[data-touch-hero="'+focusedTouchHero+'"]').focus({preventScroll:true});
   $('party-selection').textContent=String(state.selected+1).padStart(2,'0')+' / 04';
   const meter=document.querySelector('[role="meter"]');meter.setAttribute('aria-valuenow',String(sanity));
   const spec=core.SPECIALTIES[state.party[state.selected].role];

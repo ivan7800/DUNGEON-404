@@ -20,18 +20,20 @@ const server=http.createServer((req,res)=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const base=`http://127.0.0.1:${server.address().port}${prefix}`;
  let browser;
- const report={routes:prefix,errors:[],failedRequests:[],scenarios:[],buttons:[],downloads:false,import:false,canvas:false,webgl:false};
+ const report={routes:prefix,errors:[],failedRequests:[],scenarios:[],buttons:[],console:[],downloads:false,import:false,canvas:false,webgl:false};
  try{
-  browser=await chromium.launch({headless:true,...(process.env.D404_CHROMIUM_PATH?{executablePath:process.env.D404_CHROMIUM_PATH}:{}),args:['--no-sandbox','--disable-dev-shm-usage','--enable-unsafe-swiftshader','--use-angle=swiftshader']});
+  browser=await chromium.launch({headless:true,...(process.env.D404_CHROMIUM_PATH?{executablePath:process.env.D404_CHROMIUM_PATH}:{}),args:['--no-sandbox','--disable-dev-shm-usage','--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});
   report.browser=browser.version();
   console.log('BROWSER: launched',report.browser);
   const context=await browser.newContext({viewport:{width:1440,height:1100},acceptDownloads:true});
   const page=await context.newPage();page.setDefaultTimeout(10000);page.setDefaultNavigationTimeout(30000);
+  page.on('console',message=>{if(['warning','error'].includes(message.type()))report.console.push({type:message.type(),text:message.text()});});
   page.on('pageerror',error=>report.errors.push(String(error)));
   page.on('response',response=>{if(response.status()>=400)report.failedRequests.push(response.url()+' '+response.status());});
   await page.addInitScript(()=>localStorage.setItem('d404-presentation',JSON.stringify({film:true,quality:'economy'})));
   console.log('BROWSER: opening game');await page.goto(base);await page.waitForFunction(()=>window.Dungeon404);
   report.webgl=(await page.locator('#graphics-status').innerText()).includes('WebGL 3D');
+  report.initialGraphics=await page.locator('#graphics-status').innerText();console.log('BROWSER: graphics',report.initialGraphics);
   console.log('BROWSER: direct controls');await page.locator('#quick-sound').click();
   assert.equal(await page.locator('#quick-sound').getAttribute('aria-pressed'),'true');
   await page.locator('#quick-save').click();
@@ -88,6 +90,7 @@ const server=http.createServer((req,res)=>{
   for(const width of [390,320]){
    await page.setViewportSize({width,height:844});
    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth),`overflow at ${width}`);
+   await page.locator('[data-touch-hero="2"]').click();assert.equal(await page.evaluate(()=>Dungeon404.snapshot().selected),2);
    await page.screenshot({path:path.join(evidence,`mobile-${width}.png`),fullPage:true});
   }
   console.log('BROWSER: art laboratory');await page.goto(base+'art-lab.html');await page.waitForFunction(()=>document.getElementById('status').textContent.includes('Motor ACTIVO'));
