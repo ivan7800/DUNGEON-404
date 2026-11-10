@@ -6,6 +6,8 @@ Guardados: mismo esquema y clave 16. Cuatro campos opcionales se inicializan al 
 
 Comprobaciones locales: 53 scripts Node, incluyendo las dieciséis rutas de historia, costes, repetición, recuperación, recompensas y migración; sintaxis y rutas relativas. El navegador local no puede arrancar por la restricción socket() Operation not permitted del contenedor. La auditoría Chromium de GitHub Actions ejecuta ambos motores, menús, guardados, móvil y los nuevos botones de la expedición. Sus resultados se consultan en la ejecución del commit de esta entrega.
 
+Auditoría Chromium aprobada: [ejecución 42908386429](https://github.com/ivan7800/DUNGEON-404/actions/runs/42908386429), commit `3437de84fd11cd19a2b831e254352eee1e675184`. Canvas inicial, WebGL en las cuatro profundidades, menús, guardados, exportación/importación, pantalla completa y móvil emulado. Las nuevas acciones de historia, apertura de diario, campamento y encargo respondieron; sin errores de página, consola o peticiones fallidas. Captura del panel de expedición inspeccionada. La primera ejecución falló porque la prueba leía un desplegable cerrado; se corrigió la interacción y se repitió todo el recorrido.
+
 Límites: no se añaden mapas, ilustraciones ni pistas de audio; se reutiliza el sonido existente para las nuevas acciones. No se atribuye duración, FPS de equipo físico ni valoración humana de diversión. El balance añadido facilita recuperarse de errores y el contenido es opcional; la ruta automática de victoria existente forma parte de la suite.
 
 # v6.6.1 — Restauración de la presentación ilustrada
