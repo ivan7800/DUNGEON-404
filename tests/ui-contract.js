@@ -18,6 +18,8 @@ for(const page of ['index.html','art-lab.html']){
 }
 
 const html=read('index.html'),game=read('game.js'),presentation=read('presentation.js');
+assert.match(game,/initRenderer\('canvas'\)/,'La presentación ilustrada Canvas debe ser el motor inicial');
+assert.match(html,/<option value="canvas" selected>CLÁSICO · CANVAS 2\.5D · RECOMENDADO<\/option>/,'Canvas debe aparecer marcado como motor recomendado');
 const staticIds=new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(match=>match[1]));
 const referenced=[...game.matchAll(/(?:\$\(|getElementById\()'([^']+)'\s*\)/g)].map(match=>match[1]);
 for(const id of referenced)assert(staticIds.has(id),`game.js: selector sin nodo HTML: ${id}`);
@@ -27,8 +29,8 @@ assert.match(game,/querySelectorAll\('\[data-action\]'\).*addEventListener\('cli
 for(const id of ['save','load','reset','export-save','import-save','toggle-map','sound','graphics-mode'])
   assert.match(game,new RegExp(`\\$\\('${id}'\\)\\.addEventListener`),`Sin listener para #${id}`);
 for(const file of ['engine.js','renderer.js','renderer3d.js','audio.js','glb-model.js','interface.js','game.js','presentation.js'])
-  assert.match(html,new RegExp(`<script src="${file}\\?v=66"`),`index.html: caché no alineada para ${file}`);
+  assert.match(html,new RegExp(`<script src="${file}\\?v=661"`),`index.html: caché no alineada para ${file}`);
 assert.match(read('art-lab.html'),/<title>DUNGEON 404 · Laboratorio visual v3\.9<\/title>/,'Título del laboratorio desfasado');
 for(const file of ['engine.js','renderer.js','renderer3d.js','glb-model.js','art-lab.js'])
-  assert.match(read('art-lab.html'),new RegExp(`<script src="${file}\\?v=66"`),`art-lab.html: caché no alineada para ${file}`);
+  assert.match(read('art-lab.html'),new RegExp(`<script src="${file}\\?v=661"`),`art-lab.html: caché no alineada para ${file}`);
 console.log('OK UI contract: selectores, listeners, IDs, rutas Pages, caché y ausencia de Service Worker');

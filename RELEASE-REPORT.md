@@ -1,3 +1,9 @@
+# v6.6.1 — Restauración de la presentación ilustrada
+
+Se detectó una regresión perceptiva: al corregir el envío inválido de luces, navegadores compatibles empezaron a usar el renderizador WebGL 3D en lugar del Canvas 2.5D que antes entraba como fallback. Aunque WebGL ya dibujaba bien, sus criaturas a distancia resultaban menos expresivas que las ilustraciones grandes de Canvas. Esta revisión vuelve a Canvas como motor inicial recomendado y conserva WebGL como alternativa experimental.
+
+Validación: 52 pruebas Node y sintaxis local pasadas. La auditoría de navegador se actualizó para comprobar Canvas inicial y ejercer WebGL explícitamente en las cuatro profundidades; su resultado de GitHub Actions se añadirá tras ejecutar esta revisión.
+
 # v6.6 — Auditoría integral y mejoras de presentación
 
 Fecha: 8 de noviembre de 2026. Rama de trabajo: `codex/v6.6-campaign-audit`. Base remota: `cf52b5281df2f73854a4ff0dba0d3e87d12f2d55`. Los apartados v6.0–v6.5 que siguen son históricos y sus estados de rama/publicación no describen la v6.6.

@@ -33,9 +33,8 @@ const server=http.createServer((req,res)=>{
   await page.addInitScript(()=>localStorage.setItem('d404-presentation',JSON.stringify({film:true,quality:'economy'})));
   console.log('BROWSER: opening game');await page.goto(base);await page.waitForFunction(()=>window.Dungeon404);
   await page.waitForFunction(()=>Dungeon404.performance().samples>0);
-  report.webgl=(await page.locator('#graphics-status').innerText()).includes('WebGL 3D');
-  if(process.env.D404_REQUIRE_WEBGL==='1')assert(report.webgl,'This runner must draw a real WebGL frame before falling back to Canvas');
   report.initialGraphics=await page.locator('#graphics-status').innerText();console.log('BROWSER: graphics',report.initialGraphics);
+  assert.match(report.initialGraphics,/Canvas 2\.5D/,'The expressive illustrated renderer is the default presentation');
   console.log('BROWSER: direct controls');await page.locator('#quick-sound').click();
   assert.equal(await page.locator('#quick-sound').getAttribute('aria-pressed'),'true');
   await page.locator('#quick-save').click();
@@ -83,13 +82,15 @@ const server=http.createServer((req,res)=>{
    assert.equal(await page.evaluate(()=>Dungeon404.snapshot().floor),floor);
    await page.locator('#tab-quest').click();await page.screenshot({timeout:30000,path:path.join(evidence,`depth-${floor}.png`),fullPage:true});
    report.scenarios.push(floor);
-   if(report.webgl){
-    await page.locator('#tab-settings').click();await page.locator('#graphics-mode').selectOption('webgl');
-    assert.match(await page.locator('#graphics-status').innerText(),/WebGL 3D/);
+   await page.locator('#tab-settings').click();await page.locator('#graphics-mode').selectOption('webgl');
+   const webglActive=(await page.locator('#graphics-status').innerText()).includes('WebGL 3D');
+   if(process.env.D404_REQUIRE_WEBGL==='1')assert(webglActive,'Explicit WebGL selection must draw before falling back to Canvas');
+   if(webglActive){
     await page.locator('#view').screenshot({timeout:30000,path:path.join(evidence,`webgl-depth-${floor}.png`)});
     assert.match(await page.locator('#graphics-status').innerText(),/WebGL 3D/,'renderer must survive the actual draw');
-    report.webglFloors.push(floor);await page.locator('#graphics-mode').selectOption('canvas');
+    report.webgl=true;report.webglFloors.push(floor);
    }
+   await page.locator('#graphics-mode').selectOption('canvas');
   }
   // Real boss telegraph and interrupt through the same public controls as a player.
   console.log('BROWSER: boss scenario');const state=C.createGame(),boss=state.monsters.find(m=>m.kind==='warden');

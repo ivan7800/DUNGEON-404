@@ -1,3 +1,10 @@
+# v6.6.1 — Regreso a la presentación ilustrada
+
+- Canvas 2.5D pasa a ser el motor inicial recomendado: devuelve la presentación ilustrada de criaturas que se veía más potente cuando WebGL no estaba disponible.
+- WebGL 3D permanece como opción experimental en Ajustes; no se elimina ni se desactiva.
+- La clave de caché pasa a `v=661` para que GitHub Pages solicite los archivos actualizados.
+- La auditoría de navegador ahora verifica Canvas como opción inicial y selecciona WebGL explícitamente en cada profundidad.
+
 # v6.6 — Relieves y señales de la Catedral
 
 - Cuatro relieves vectoriales originales en las paredes Canvas: custodio sepultado, libros inundados, astrolabio y osario. Bóvedas y trazos de ataque/conjuro más legibles; alerta de fase de jefe limitada a criaturas visibles. WebGL conserva sus modelos y arquitectura.

@@ -1,10 +1,10 @@
-# DUNGEON 404 — La Catedral de la Marea · v6.6
+# DUNGEON 404 — La Catedral de la Marea · v6.6.1
 
 Dungeon crawler por casillas y acciones: cuatro aventureros descienden por catedrales enterradas bajo un océano cósmico. La campaña conserva sus cuatro profundidades, investigación, rituales, equipo, cordura y ocho secretos; ahora ofrece cuatro desenlaces y reliquias de eco de un solo uso.
 
 La campaña continúa la progresión y los sistemas de las versiones v4.2 y v4.3.
 
-La v6.6 añade relieves originales por profundidad al modo Canvas, señales contextuales de exploración y accesos directos a sonido, guardado y ajustes sobre la partida. Conserva la estética de archivo analógico de terror cósmico de los ochenta. Consulta [RELEASE-REPORT.md](RELEASE-REPORT.md) para el alcance y las comprobaciones realizadas y pendientes.
+La v6.6.1 restaura Canvas 2.5D ilustrado como presentación inicial para conservar la fuerza visual de las criaturas. WebGL 3D continúa disponible como modo experimental seleccionable. La v6.6 añade relieves originales por profundidad, señales contextuales de exploración y accesos directos a sonido, guardado y ajustes. Consulta [RELEASE-REPORT.md](RELEASE-REPORT.md) para el alcance y las comprobaciones realizadas y pendientes.
 
 ## Iniciar
 

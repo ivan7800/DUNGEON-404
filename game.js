@@ -5,7 +5,10 @@ const core=window.DungeonEngine;
 if(!core||!window.DungeonRenderer)throw Error('Required game modules did not load');
 const $=id=>document.getElementById(id);
 let renderer;
-let renderMode='auto';
+// The illustrated Canvas renderer is the visual reference. WebGL remains
+// available in settings, but should not silently replace the more expressive
+// creature presentation on capable devices.
+let renderMode='canvas';
 let renderQuality='smooth';
 try{if(JSON.parse(localStorage.getItem('d404-presentation')||'{}')?.quality==='economy')renderQuality='economy';}catch(_){}
 function createCanvas(){
@@ -35,7 +38,7 @@ function initRenderer(mode='auto'){
  const select=$('graphics-mode');if(select)select.value=renderMode;
  const status=$('graphics-status');if(status){const details=renderer.diagnostics?.shaderLinked?' · shaders enlazados':'';status.textContent=String(renderer.backend||'Canvas 2.5D')+details+(fallback?' · WebGL no disponible':'');}
 }
-initRenderer('auto');
+initRenderer('canvas');
 // Models are optional art resources: failures never interrupt the RPG.
 if(window.DungeonGLB){for(const type of Object.keys(window.DungeonGLB.catalog))window.DungeonGLB.loadCreature(type).catch(error=>console.warn('Modelo cósmico no disponible:',type,error));}
 let renderRecovery=false;
