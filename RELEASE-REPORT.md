@@ -1,3 +1,13 @@
+# v6.7 — La expedición perdida
+
+La ampliación utiliza los cuatro mapas y el arte aprobado. Añade ocho historias con dos elecciones cada una, un diario, cuatro encargos de caza, provisiones únicas por jefe y campamentos seguros limitados. Cada historia está en (5,1) o (7,5) y consume una fase; se bloquea mientras hay una amenaza visible. Los costes aparecen antes de elegir y no se consumen al fallar. Campamento y encargo solo se activan en la entrada; el campamento rechaza enemigos a tres casillas, cuesta una esencia (dos si recupera un caído) y se consume una vez por profundidad.
+
+Guardados: mismo esquema y clave 16. Cuatro campos opcionales se inicializan al importar versiones anteriores: expeditionChoices, campsUsed, huntsClaimed, bossSpoils. Se rechazan tipos incorrectos, entradas desconocidas, duplicados y dos decisiones del mismo evento. No se reviven enemigos ni se altera progreso anterior.
+
+Comprobaciones locales: 53 scripts Node, incluyendo las dieciséis rutas de historia, costes, repetición, recuperación, recompensas y migración; sintaxis y rutas relativas. El navegador local no puede arrancar por la restricción socket() Operation not permitted del contenedor. La auditoría Chromium de GitHub Actions ejecuta ambos motores, menús, guardados, móvil y los nuevos botones de la expedición. Sus resultados se consultan en la ejecución del commit de esta entrega.
+
+Límites: no se añaden mapas, ilustraciones ni pistas de audio; se reutiliza el sonido existente para las nuevas acciones. No se atribuye duración, FPS de equipo físico ni valoración humana de diversión. El balance añadido facilita recuperarse de errores y el contenido es opcional; la ruta automática de victoria existente forma parte de la suite.
+
 # v6.6.1 — Restauración de la presentación ilustrada
 
 Se detectó una regresión perceptiva: al corregir el envío inválido de luces, navegadores compatibles empezaron a usar el renderizador WebGL 3D en lugar del Canvas 2.5D que antes entraba como fallback. Aunque WebGL ya dibujaba bien, sus criaturas a distancia resultaban menos expresivas que las ilustraciones grandes de Canvas. Esta revisión vuelve a Canvas como motor inicial recomendado y conserva WebGL como alternativa experimental.

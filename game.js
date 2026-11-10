@@ -223,6 +223,19 @@ function renderUI(){
     [!state.monsters.some(m=>m.kind==='firstname'&&m.hp>0),'Derrota al Primer Nombre'],
     [state.won,'Escapa del Osario (E)']
   ];
+  const story=core.encounterAt(state),storyId=`${state.floor}:${state.x},${state.y}`;
+  const pendingStory=story&&!state.expeditionChoices.some(v=>v.startsWith(storyId+':'));
+  $('adventure-description').textContent=pendingStory?story.name+' · '+story.text:'Ocho historias opcionales esperan en (5,1) y (7,5) de cada profundidad. Sus decisiones cuestan una fase enemiga. Puedes dejarlas pendientes y regresar antes de descender.';
+  $('adventure-choices').replaceChildren(...(pendingStory?[[story.a,'adventure:a'],[story.b,'adventure:b']].map(([label,action])=>{
+    const b=element('button','gear-btn',label);b.type='button';b.disabled=state.dead||state.won||core.threats(state).length>0;b.addEventListener('click',()=>play(action));return b;
+  }):[]));
+  const quarry=state.monsters.find(m=>m.id?.startsWith('roamer-')&&m.floor===state.floor);
+  const claimed=state.huntsClaimed.includes(state.floor),atCamp=state.x===1&&state.y===1;
+  $('hunt-status').textContent='ENCARGO · '+(quarry?.name||'Entidad errante')+' · '+(claimed?'RECOMPENSA COBRADA':quarry?.hp>0?'EN CAZA · vuelve al altar tras vencerla':'VENCIDA · cobra 1 poción y 1 esencia en el altar')+' · CAMPAMENTO: '+(state.campsUsed.includes(state.floor)?'CONSUMIDO':'1 esencia; 2 si hay un caído. +10 PV, +6 PM, +8 cordura; recupera un caído. Una vez por profundidad.');
+  $('expedition-actions').replaceChildren(...[['ACAMPAR EN EL ALTAR','camp',!atCamp||state.campsUsed.includes(state.floor)],['COBRAR ENCARGO','claimHunt',!atCamp||claimed||!quarry||quarry.hp>0]].map(([label,action,locked])=>{
+    const b=element('button','gear-btn',label);b.type='button';b.disabled=locked||state.dead||state.won;b.addEventListener('click',()=>play(action));return b;
+  }));
+  $('adventure-journal').replaceChildren(...state.expeditionChoices.map(v=>{const id=v.slice(0,-2),first=v.endsWith(':a'),e=core.ENCOUNTERS[id];return element('p','',e.name+' · '+(first?e.a:e.b)+' — '+(first?e.afterA:e.afterB));}));
   const echo=core.echoAt(state),echoId=`${state.floor}:${state.x},${state.y}`,echoPending=echo&&!state.echoes.includes(echoId);
   $('echo-panel').hidden=!echoPending;
   if(echoPending){$('echo-title').textContent='ECO SIN DESCIFRAR · '+echo.name;$('echo-text').textContent=echo.text+' Elige una consecuencia; solo puedes llevarte una.';

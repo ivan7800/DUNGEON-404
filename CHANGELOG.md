@@ -1,3 +1,12 @@
+# v6.7 — La expedición perdida
+
+- Ocho encuentros narrativos, dos por profundidad, con costes y consecuencias explícitos; diario persistente y pistas cercanas.
+- Campamento seguro en el altar de entrada, una vez por profundidad: recuperación del grupo por una esencia; dos si recupera al primer compañero caído. No consume usos si todo el grupo está recuperado.
+- Encargo opcional por entidad errante: cobrar una poción y una esencia en el altar tras vencerla, una vez por profundidad.
+- Los cuatro custodios entregan provisiones únicas tras su derrota: dos pociones, una esencia y un pergamino.
+- Conserva los cuatro mapas, finales, guardados esquema 16, ambos motores y todos los recursos gráficos y sonoros. Canvas sigue siendo el predeterminado.
+- Nuevas pruebas funcionales y escenarios de navegador para decisiones, campamento y encargos. Caché de scripts 67.
+
 # v6.6.1 — Regreso a la presentación ilustrada
 
 - Canvas 2.5D pasa a ser el motor inicial recomendado: devuelve la presentación ilustrada de criaturas que se veía más potente cuando WebGL no estaba disponible.

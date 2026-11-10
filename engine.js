@@ -313,12 +313,57 @@
   const at = (x,y) => `${x},${y}`;
   const distance = (a,b) => Math.abs(a.x-b.x) + Math.abs(a.y-b.y);
   const rngInt = (rng, n) => Math.min(n-1, Math.max(0, Math.floor(rng()*n)));
+
+  // Optional expedition stories share the campaign save; choices are permanent and bounded.
+  const ENCOUNTERS=Object.freeze({
+    '1:5,1':{name:'El campanero enterrado',text:'Una mano sale de una campana llena de tierra. Su dueño pide que recordéis el camino de vuelta.',a:'Liberarlo · cuesta 1 poción; +2 lucidez',b:'Escuchar desde lejos · +5 cordura',cost:'potions',gain:'lucidity',amount:2,other:'sanity',otherAmount:5,afterA:'El campanero os entrega el recuerdo de una puerta abierta.',afterB:'Os alejáis siguiendo el ritmo de su campana.'},
+    '1:7,5':{name:'La vigilia de Mara',text:'Un peregrino inmóvil custodia una bolsa. Mara reconoce el nudo: alguien de la expedición anterior lo ató.',a:'Desatar sin robar · +1 esencia',b:'Abrir la bolsa · −6 cordura; +2 pociones',gain:'ether',amount:1,other:'potions',otherAmount:2,loss:6,afterA:'Mara libera el nudo. El peregrino deja caer una esencia y se disuelve.',afterB:'La bolsa contiene viales y un diente que pronuncia vuestro nombre.'},
+    '2:5,1':{name:'La niña de sal',text:'Una figura diminuta sostiene un libro seco. Pide un nombre a cambio de un mapa.',a:'Dar un recuerdo · −6 cordura; +2 pergaminos',b:'Guardar el nombre · +1 poción',gain:'scrolls',amount:2,lossA:6,other:'potions',otherAmount:1,afterA:'La niña dibuja rutas en dos hojas y olvida vuestro rostro.',afterB:'La niña os devuelve un vial que todavía conserva calor.'},
+    '2:7,5':{name:'La voz de Ilyra',text:'Un tomo habla con la voz que Ilyra tenía de niña. Quiere que lo llevéis al mundo de arriba.',a:'Descifrarlo · cuesta 1 esencia; +3 lucidez',b:'Cerrar el tomo · +8 cordura',cost:'ether',gain:'lucidity',amount:3,other:'sanity',otherAmount:8,afterA:'Ilyra reconoce un hechizo escondido en una canción de cuna.',afterB:'La voz se apaga. Ilyra conserva su propio recuerdo.'},
+    '3:5,1':{name:'El mapa de piel',text:'El cartógrafo de otra expedición dejó una ruta tatuada sobre una mano de cera.',a:'Copiar la ruta · cuesta 1 pergamino; +2 esencias',b:'Enterrar la mano · +1 lucidez',cost:'scrolls',gain:'ether',amount:2,other:'lucidity',otherAmount:1,afterA:'La ruta conduce hasta dos ampollas de luz negra.',afterB:'La mano se cierra al tocar la piedra. Su recuerdo os acompaña.'},
+    '3:7,5':{name:'El juramento de Aldric',text:'Un escudo muestra los nombres de quienes Aldric no pudo proteger. Una inscripción pide una última guardia.',a:'Velar a los muertos · cuesta 1 esencia; +15 cordura',b:'Recoger provisiones · +2 pociones',cost:'ether',gain:'sanity',amount:15,other:'potions',otherAmount:2,afterA:'Aldric permanece de pie hasta que el escudo deja de llorar.',afterB:'Aldric lleva los viales y promete regresar por el escudo.'},
+    '4:5,1':{name:'La última confesión',text:'Borin encuentra un confesionario que respira. Dentro, su propia voz pide absolución.',a:'Responder · −8 cordura; +3 lucidez',b:'Bendecir la puerta · +1 esencia',gain:'lucidity',amount:3,lossA:8,other:'ether',otherAmount:1,afterA:'La voz reconoce a Borin. Su culpa deja de pertenecer a la Catedral.',afterB:'La puerta exhala una esencia y permanece cerrada.'},
+    '4:7,5':{name:'La mesa de los ausentes',text:'Hay cuatro platos calientes y un quinto cubierto. Nadie se atreve a preguntar para quién es.',a:'Dejar una ofrenda · cuesta 1 poción; +2 esencias',b:'Pronunciar los nombres · +10 cordura',cost:'potions',gain:'ether',amount:2,other:'sanity',otherAmount:10,afterA:'El quinto cubierto desaparece. Dos luces quedan sobre la mesa.',afterB:'Por un instante, la compañía oye las voces de quienes vinieron antes.'}
+  });
+  function encounterAt(s){return ENCOUNTERS[`${s.floor}:${s.x},${s.y}`]||null;}
+  function adventureChoice(s,events,choice,rng){
+    const id=`${s.floor}:${s.x},${s.y}`,site=ENCOUNTERS[id];
+    if(!site||s.expeditionChoices.some(v=>v.startsWith(id+':'))){report(s,'No queda una decisión pendiente en este lugar.',events,'warning');return;}
+    if(threats(s).length){report(s,'La amenaza cercana impide detenerse. Resuelve el encuentro antes de elegir.',events,'warning');return;}
+    const first=choice==='a';
+    if(first&&site.cost&&s[site.cost]<1){report(s,'Falta el recurso indicado. La decisión sigue pendiente.',events,'warning');return;}
+    if(first&&site.cost)s[site.cost]--;
+    const key=first?site.gain:site.other,amount=first?site.amount:site.otherAmount;
+    s[key]=Math.min(key==='sanity'?100:key==='lucidity'?10:1000,s[key]+amount);
+    s.sanity=clampSanity(s.sanity-(first?(site.lossA||0):(site.loss||0)));
+    s.expeditionChoices.push(id+':'+choice);
+    report(s,site.name+': '+(first?site.afterA:site.afterB),events,'lore');
+    enemyTurn(s,events,rng);
+  }
+  function camp(s,events){
+    if(s.x!==1||s.y!==1||s.campsUsed.includes(s.floor)||s.monsters.some(m=>m.hp>0&&(m.floor||1)===s.floor&&distance(m,s)<=3)){report(s,'El campamento requiere el altar de entrada, una zona segura y no haberlo usado en esta profundidad.',events,'warning');return;}
+    const fallen=s.party.find(p=>p.hp===0),cost=fallen?2:1;
+    if(s.ether<cost){report(s,`El campamento necesita ${cost} esencias${fallen?' para recuperar a '+fallen.name:''}.`,events,'warning');return;}
+    if(!fallen&&!s.party.some(p=>p.hp<p.max||p.mana<p.maxMana)){report(s,'La compañía ya está recuperada; conservas las esencias y el campamento.',events,'info');return;}
+    s.ether-=cost;s.campsUsed.push(s.floor);
+    if(fallen)fallen.hp=Math.ceil(fallen.max/2);
+    for(const p of s.party)if(p.hp>0){p.hp=Math.min(p.max,p.hp+10);p.mana=Math.min(p.maxMana,p.mana+6);}
+    s.sanity=clampSanity(s.sanity+8);
+    report(s,`Campamento consumido en profundidad ${s.floor}: +10 PV y +6 PM a los vivos, +8 cordura.${fallen?' '+fallen.name+' regresa a la compañía.':''}`,events,'rest');
+  }
+  function claimHunt(s,events){
+    const quarry=s.monsters.find(m=>m.id===COSMIC_ROAMERS.find(r=>r.floor===s.floor).id);
+    if(s.x!==1||s.y!==1||!quarry||quarry.hp>0||s.huntsClaimed.includes(s.floor)){report(s,'El encargo se cobra una vez en el altar de entrada tras derrotar a la entidad errante de esta profundidad.',events,'warning');return;}
+    s.huntsClaimed.push(s.floor);s.potions=Math.min(1000,s.potions+1);s.ether=Math.min(1000,s.ether+1);
+    report(s,'ENCARGO CUMPLIDO · '+quarry.name+': +1 poción y +1 esencia. El altar conserva su silencio.',events,'loot');
+  }
+
   function createGame() {
     return {
       schema:VERSION, floor:1, x:1,y:1,dir:1,party:HEROES.map(h=>({...h})),selected:0,
       potions:3,ether:2,scrolls:1,key:false,sigil:false,voidHeart:false,finalRune:false,turn:0,won:false,ending:null,dead:false,guard:null,ward:0,
       sanity:100,lucidity:0,tomesRead:[],knowledge:[],witnessed:[],ritualSealed:false,drownedClues:[],drownedRitual:'none',secretsFound:[],gear:[],gearFound:[],gateOpen:false,labyrinthGateOpen:false,disarmedTraps:[],visitedByFloor:{1:['1,1'],2:[],3:[],4:[]},
-      shrines:[],echoes:[],echoChoices:[],relics:[],
+      shrines:[],echoes:[],echoChoices:[],relics:[],expeditionChoices:[],campsUsed:[],huntsClaimed:[],bossSpoils:[],
       visited:['1,1'],monsters:[...START_MONSTERS,...LOWER_MONSTERS,...LABYRINTH_MONSTERS,...ABYSS_MONSTERS,...COSMIC_ROAMERS].map(m=>({...m})),
       items:['3,11','4,13'],trapsTriggered:[],loreRead:[],
       messages:['Prólogo: la expedición ha desaparecido. Las campanas suenan bajo la tierra. Investiga las inscripciones (I).']
@@ -473,6 +518,8 @@
       if(manuscript&&!s.drownedClues.includes(manuscript.id))out.push({action:'investigateDrowned',label:'Descifrar manuscrito',detail:`${manuscript.title} · cordura −${manuscript.cost}.`});
       if(here==='3,11'&&s.drownedRitual==='none')out.push({page:'lore',label:'Responder a la Marea',detail:'Sellar o escuchar: consulta las consecuencias en Códice.'});
     }
+    const story=encounterAt(s),storyId=`${s.floor}:${s.x},${s.y}`;
+    if(story&&!s.expeditionChoices.some(v=>v.startsWith(storyId+':')))out.push({page:'quest',label:story.name,detail:'Una decisión de la expedición espera en Juramento.'});
     const secretId=`${s.floor}:${ahead}`;
     if(SECRETS[secretId]&&!s.secretsFound.includes(secretId))out.push({action:'search',label:'Examinar mampostería',detail:'Una juntura interrumpe el relieve de la pared.'});
     if(tile(s.x+dx,s.y+dy,s.floor)==='X')out.push({action:'interact',label:s.floor===4?'Abrir último umbral':'Descender',detail:'Necesitas la reliquia de la zona y derrotar a su custodio.'});
@@ -554,6 +601,10 @@
     }
   }
   function reward(s,m,events){
+    if(BOSS_KINDS.includes(m.kind)&&!s.bossSpoils.includes(m.kind)){
+      s.bossSpoils.push(m.kind);s.potions=Math.min(1000,s.potions+2);s.ether=Math.min(1000,s.ether+1);s.scrolls=Math.min(1000,s.scrolls+1);
+      report(s,`RELICARIO DEL CUSTODIO · ${m.name}: +2 pociones, +1 esencia y +1 pergamino.`,events,'loot');
+    }
     for(const p of s.party){
       if(p.hp<=0)continue;
       p.xp+=m.max;
@@ -874,6 +925,9 @@
     else if(action==='back')move(s,...DIRS[(s.dir+2)%4],events,rng);
     else if(action==='strafeLeft')move(s,...DIRS[(s.dir+3)%4],events,rng);
     else if(action==='strafeRight')move(s,...DIRS[(s.dir+1)%4],events,rng);
+    else if(action==='camp')camp(s,events);
+    else if(action==='claimHunt')claimHunt(s,events);
+    else if(action==='adventure:a'||action==='adventure:b')adventureChoice(s,events,action.slice(-1),rng);
     else if(action==='signature')signature(s,events,rng);
     else if(action==='path:bulwark'||action==='path:edge')choosePath(s,events,action.slice(5));
     else if(action==='shrine:mind'||action==='shrine:ether')shrine(s,events,action.slice(7));
@@ -911,6 +965,11 @@
     return events;
   }
   function validGame(s){
+    if(!s||typeof s!=='object')return false;
+    for(const [key,allowed,max] of [['expeditionChoices',Object.keys(ENCOUNTERS).flatMap(k=>[k+':a',k+':b']),8],['campsUsed',[1,2,3,4],4],['huntsClaimed',[1,2,3,4],4],['bossSpoils',BOSS_KINDS,4]]){
+      if(s[key]!==undefined&&(!Array.isArray(s[key])||s[key].length>max||new Set(s[key]).size!==s[key].length||s[key].some(v=>!allowed.includes(v))))return false;
+    }
+    if(s.expeditionChoices&&new Set(s.expeditionChoices.map(v=>v.slice(0,-2))).size!==s.expeditionChoices.length)return false;
     // Imported JSON is untrusted. Check containers before reading nested fields.
     if(!s||typeof s!=='object'||Array.isArray(s))return false;
     if(!Array.isArray(s.party)||s.party.length!==4||s.party.some(p=>!p||typeof p!=='object'||typeof p.role!=='string'||!Object.hasOwn(SPECIALTIES,p.role)))return false;
@@ -967,7 +1026,7 @@
     if(!Array.isArray(raw.party)||raw.party.length!==4||raw.party.some(p=>!p||typeof p!=='object'))return null;
     if(!Array.isArray(raw.visited))return null;
     const previous=raw.schema||3;
-    const s={...raw,schema:VERSION,shrines:raw.shrines===undefined?[]:raw.shrines,echoes:raw.echoes===undefined?[]:raw.echoes,echoChoices:raw.echoChoices===undefined?[]:raw.echoChoices,relics:raw.relics===undefined?[]:raw.relics,
+    const s={...raw,expeditionChoices:raw.expeditionChoices===undefined?[]:raw.expeditionChoices,campsUsed:raw.campsUsed===undefined?[]:raw.campsUsed,huntsClaimed:raw.huntsClaimed===undefined?[]:raw.huntsClaimed,bossSpoils:raw.bossSpoils===undefined?[]:raw.bossSpoils,schema:VERSION,shrines:raw.shrines===undefined?[]:raw.shrines,echoes:raw.echoes===undefined?[]:raw.echoes,echoChoices:raw.echoChoices===undefined?[]:raw.echoChoices,relics:raw.relics===undefined?[]:raw.relics,
       ending:raw.ending===undefined?(raw.won?'silence':null):raw.ending,
       sanity:raw.sanity===undefined?100:raw.sanity,
       lucidity:raw.lucidity===undefined?0:raw.lucidity,
@@ -1032,5 +1091,5 @@
     return s;
   }
   return {VERSION,SAVE_KEY,V15_SAVE_KEY,V14_SAVE_KEY,V13_SAVE_KEY,SECRETS,V12_SAVE_KEY,V11_SAVE_KEY,V10_SAVE_KEY,V9_SAVE_KEY,V8_SAVE_KEY,V7_SAVE_KEY,PREVIOUS_SAVE_KEY,V5_SAVE_KEY,LEGACY_SAVE_KEY,V4_SAVE_KEY,LEVEL,LOWER,LABYRINTH,ABYSS,COSMIC_CLUES,FORBIDDEN_TOMES,DROWNED_TEXTS,COSMIC_ENEMIES,ENDINGS,resolveEnding,WIDTH,HEIGHT,DIRS,LORES,TRAPS,GEAR,BESTIARY,PORTCULLIS,PRESSURE_PLATE,gateAt,
-    SPECIALTIES,PATHS,ECHO_SITES,RELICS,echoAt,threats,opportunities,tile,wallAt,passable,createGame,monsterAt,dispatch,validGame,importSave};
+    ENCOUNTERS,encounterAt,SPECIALTIES,PATHS,ECHO_SITES,RELICS,echoAt,threats,opportunities,tile,wallAt,passable,createGame,monsterAt,dispatch,validGame,importSave};
 });

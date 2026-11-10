@@ -112,6 +112,22 @@ const server=http.createServer((req,res)=>{
    await page.locator('[data-touch-hero="2"]').click();assert.equal(await page.evaluate(()=>Dungeon404.snapshot().selected),2);
    await page.screenshot({timeout:30000,path:path.join(evidence,`mobile-${width}.png`),fullPage:true});
   }
+  console.log('BROWSER: expedition choices and camp');
+  await page.setViewportSize({width:1440,height:1100});
+  const expedition=C.createGame();expedition.x=5;expedition.monsters.forEach(m=>m.hp=0);
+  await page.evaluate(({key,state})=>localStorage.setItem(key,JSON.stringify(state)),{key:C.SAVE_KEY,state:expedition});
+  await page.locator('#tab-settings').click();await page.locator('#load').click();await page.locator('#tab-quest').click();
+  await page.locator('#adventure-choices button').first().click();
+  assert.deepEqual(await page.evaluate(()=>Dungeon404.snapshot().expeditionChoices),['1:5,1:a']);
+  assert.match(await page.locator('#adventure-journal').innerText(),/campanero/i);
+  const camping=C.createGame();camping.party[1].hp=0;camping.monsters.forEach(m=>m.hp=0);
+  await page.evaluate(({key,state})=>localStorage.setItem(key,JSON.stringify(state)),{key:C.SAVE_KEY,state:camping});
+  await page.locator('#tab-settings').click();await page.locator('#load').click();await page.locator('#tab-quest').click();
+  await page.getByRole('button',{name:'ACAMPAR EN EL ALTAR',exact:true}).click();
+  assert((await page.evaluate(()=>Dungeon404.snapshot().party[1].hp))>0);
+  await page.getByRole('button',{name:'COBRAR ENCARGO',exact:true}).click();
+  assert.deepEqual(await page.evaluate(()=>Dungeon404.snapshot().huntsClaimed),[1]);
+  await page.screenshot({timeout:30000,path:path.join(evidence,'expedition-journal.png'),fullPage:true});report.expedition=true;
   console.log('BROWSER: art laboratory');await page.goto(base+'art-lab.html');await page.waitForFunction(()=>document.getElementById('status').textContent.includes('Motor ACTIVO'));
   await page.locator('#mode').selectOption('canvas');
   for(const floor of ['1','2','3','4'])await page.locator('#floor').selectOption(floor);

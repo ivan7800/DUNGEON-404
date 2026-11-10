@@ -29,8 +29,8 @@ assert.match(game,/querySelectorAll\('\[data-action\]'\).*addEventListener\('cli
 for(const id of ['save','load','reset','export-save','import-save','toggle-map','sound','graphics-mode'])
   assert.match(game,new RegExp(`\\$\\('${id}'\\)\\.addEventListener`),`Sin listener para #${id}`);
 for(const file of ['engine.js','renderer.js','renderer3d.js','audio.js','glb-model.js','interface.js','game.js','presentation.js'])
-  assert.match(html,new RegExp(`<script src="${file}\\?v=661"`),`index.html: caché no alineada para ${file}`);
+  assert.match(html,new RegExp(`<script src="${file}\\?v=67"`),`index.html: caché no alineada para ${file}`);
 assert.match(read('art-lab.html'),/<title>DUNGEON 404 · Laboratorio visual v3\.9<\/title>/,'Título del laboratorio desfasado');
 for(const file of ['engine.js','renderer.js','renderer3d.js','glb-model.js','art-lab.js'])
-  assert.match(read('art-lab.html'),new RegExp(`<script src="${file}\\?v=661"`),`art-lab.html: caché no alineada para ${file}`);
+  assert.match(read('art-lab.html'),new RegExp(`<script src="${file}\\?v=67"`),`art-lab.html: caché no alineada para ${file}`);
 console.log('OK UI contract: selectores, listeners, IDs, rutas Pages, caché y ausencia de Service Worker');
