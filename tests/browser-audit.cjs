@@ -119,6 +119,7 @@ const server=http.createServer((req,res)=>{
   await page.locator('#tab-settings').click();await page.locator('#load').click();await page.locator('#tab-quest').click();
   await page.locator('#adventure-choices button').first().click();
   assert.deepEqual(await page.evaluate(()=>Dungeon404.snapshot().expeditionChoices),['1:5,1:a']);
+  await page.getByText('DIARIO DE DECISIONES',{exact:true}).click();
   assert.match(await page.locator('#adventure-journal').innerText(),/campanero/i);
   const camping=C.createGame();camping.party[1].hp=0;camping.monsters.forEach(m=>m.hp=0);
   await page.evaluate(({key,state})=>localStorage.setItem(key,JSON.stringify(state)),{key:C.SAVE_KEY,state:camping});
